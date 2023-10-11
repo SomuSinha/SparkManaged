@@ -1,0 +1,3178 @@
+from join 
+where 
+group by having 
+select 
+order by limit 
+
+with temp as 
+(select row_number() over (partition by ltrim(sku,'0'), ltrim(upc,'0') over order by active_flag desc) rnum 
+from product.product_set_member),
+temp2 as 
+(select *, max(rnum) over (partition by ltrim(sku,'0'), ltrim(upc,'0')) mx 
+from temp)
+select * from temp2 where rnum>1;
+
+
+with temp as 
+(select dense_rank() over (partition by ltrim(sku,'0'), ltrim(upc,'0') over order by active_flag desc) rnk 
+from product.product_set_member),
+temp2 as 
+(select *, max(rnum) over (partition by ltrim(sku,'0'), ltrim(upc,'0')) rnk 
+from temp)
+select * from temp2 where rnk>1;
+
+
+with temp as 
+(select ltrim(sku,'0') as sku, ltrim(upc,'0') as upc 
+from product.product_set_member 
+group by ltrim(sku,'0'), ltrim(upc,'0')
+--having count(*)>1
+having count(distinct uuid)>1
+)
+select psm.*
+from product.product_set_member psm 
+join temp on coalesce(ltrim(psm.sku,'0'),'sku')=coalesce(ltrim(temp.sku,'0'),'sku') and coalesce(ltrim(psm.upc,'0'),'upc')=coalesce(ltrim(temp.upc,'0'),'upc');
+
+
+--concat 
+with temp as 
+(select ltrim(sku,'0') as sku, ltrim(upc,'0') as upc 
+from product.product_set_member 
+group by ltrim(sku,'0'), ltrim(upc,'0')
+--having count(*)>1
+having count(distinct uuid)>1
+)
+select psm.*
+from product.product_set_member psm where coalesce(ltrim(psm.sku,'0'),'sku')||coalesce(ltrim(psm.upc,'0'),'upc') in 
+(select coalesce(ltrim(psm.sku,'0'),'sku')||coalesce(ltrim(psm.upc,'0'),'upc') from temp);
+
+col
+1
+1
+2
+3
+1
+
+col
+1
+1
+1
+5
+
+output of inner, left, right, full outer join
+
+
+nullif(nullif(trim(col),''),'NA') is null 
+coalesce(trim(col),'') <> ''
+ifnull(col, 2)
+case when col1 in (1,2) then 1 
+     when (col1=2 and col2=4) or col3=6 then 2 
+	 else 0 end as active_flag 
+	 
+	 
+select tbl1.*
+from tbl1 
+left join tbl2 on tbl1.id=tbl2.id where tbl2.id is null;
+
+
+select tbl2.*
+from tbl2 
+left join tbl1 on tbl2.id=tbl1.id and tbl2.name=tbl1.name where tbl1.id is null and tbl1.name is null;
+
+
+--last_value 
+--rank 
+select tbl2.*, coalesce(tbl1.id, first_value(tbl2.id) over (partition by name, age), first_value(tbl2.name) over (partition by name, age))
+from tbl2 
+left join tbl1 on tbl2.id=tbl1.id and tbl2.name=tbl1.name ;
+
+
+select * from stage
+union 
+--union all 
+select * from tgt 
+left join stg on tgt.id=stg.id and tgt.name=stg.name where stg.id is null and stg.name is null;
+
+
+select coalesce(stage.id, tgt.id),  coalesce(stage.name, tgt.name),
+from stage 
+full outer join tgt on stage.id=tgt.id and stage.name=tgt.name
+where (tgt.id is null and tgt.name is null) or (stg.id is null and stg.name is null);
+
+
+--full join as inner join 
+--insert overwrite into tgt (uuid, id, name)
+select coalesce(tgt.uuid, stage.uuid), coalesce(stage.id, tgt.id),  coalesce(stage.name, tgt.name),
+from stage 
+full outer join tgt on stage.id=tgt.id and stage.name=tgt.name
+where (tgt.id is not null and tgt.name is not null) and  (stg.id is not null and stg.name is not null);
+
+
+select
+ *,
+ case when tgt.id is null and stg.id is not null then 'res1'
+      when stg.id is null and tgt.id is not null then 'res2'
+	  else 'res3' end as result
+from stage 
+full outer join tgt on stage.id=tgt.id and stage.name=tgt.name;
+
+
+select 
+coalesce(stage.col, tgt.col),  
+coalesce(stage.col2, tgt.col2),
+from stage 
+full outer join tgt on stage.id=tgt.id and stage.name=tgt.name;
+
+
+with temp as 
+(select id, cost::int*-1 from tbl)
+select *, sum(cost) over (partition by id order by date);
+
+select id, max(marks)
+from tbl 
+group by id;
+
+select id, max(marks) over (partition by id)
+from tbl ;
+
+select id, sum(case when marks=1 then 1 else 0 end) as sm 
+from tbl 
+group by id;
+
+
+select tbl1.id, tbl2.name from 
+tbl 
+cross join tbl2 ;
+
+--inner join with a broader join to behave as cross join 
+
+select tbl1.id, tbl2.name from 
+tbl 
+inner join tbl2 on tbl.banner=tbl2.banner;
+
+
+
+create temporary table tmp
+with temp as 
+(select uuid, count(distinct uuid) over (partition by sku, upc) cnt from 
+product.product_set_member)
+
+delete from product.product_set_member where uuid in (select uuid from tmp);
+
+
+with temp as 
+(select uuid, sku, upc, lead(start_date) over (partition by sku, upc order by start_date asc) ld_start_date from product.product_set_member),
+temp2 as 
+(
+select uuid, dateadd('day', -1 , ld_start_date ) as new_end_date from temp 
+)
+update price.client_price_denorm cpd 
+set end_date=cpd.new_end_date
+from temp 
+where cpd.uuid=temp.uuid and sku in ('123', '456');
+
+
+
+update price.client_price_denorm cpd 
+using 
+(with temp as 
+(select uuid, sku, upc, lead(start_date) over (partition by sku, upc order by start_date asc) ld_start_date from product.product_set_member),
+temp2 as 
+(
+select uuid, dateadd('day', -1 , ld_start_date ) as new_end_date from temp 
+)
+select * from temp2)
+set end_date=cpd.new_end_date
+from temp 
+where cpd.uuid=temp.uuid and sku in ('123', '456');
+
+
+
+select ssh.*, ssp.store_set_parent
+from store.store_set_hierarchy ssh 
+join store.store_set_hierarcht ssp where ssh.store_set_id=ssp.store_set_parent_id
+join store.store_set_hierarcht ssp2 where ssh.store_set_id = ssp2.store_set_id; 
+
+
+select psm.sku, h.level5 as level1 , h.level 4 as level2, h.level3 as level2, h.level2 as level1 
+from psm 
+join hiearrchy h on psm.id=h.hierarchy_id;
+
+select e.*
+from employee e
+join employee m on e.empid=m.mamger_id;
+
+
+temp.col2 = coalesce(tgt.col5, tgt.col4, tgt.col3, tgt.col2, tgt.col1)
+
+with temp as 
+(select max(salary) as mx_salary from tbl)
+select tbl1.*
+from tbl 
+left join tmp on tbl.salary=tmp.mx_salary where tmp.mx_salary is null order by salary limit 1 ;
+
+select * from tbl qualify 
+dense_rank() over (partition by emp order by salary)=2 ;
+
+--row to column
+with 
+tbl as 
+(
+select id, salary, 
+from tbl where company='walmart'
+),
+tbl2 as 
+(
+select id, salary
+from tbl where company='amazon'
+)
+select tbl.id, tbl.salary as walmart_salary, tbl2.salary as amazon_salary
+from tbl 
+join tbl2 on tbl.id = tbl2.id;
+
+%sql
+with 
+good_data as (
+select 1 as id, count(*) as valid_data from dev.event_schema.silver
+),
+bad_data as
+(
+  select 1 as id, count(*) as invalid_data from dev.event_schema.error_tbl
+)
+select g.valid_data, b.invalid_data
+from good_data g 
+join bad_data b on g.id=b.id;
+
+--column to row 
+
+select id, amazon_salary as salary from temp 
+union 
+select id, walmart_salary as salary from temp ;
+
+
+select id, name from tbl 
+except 
+--minus 
+select id, name from tbl2 
+
+select id, name from tbl 
+intersect 
+select id, name from tbl2 
+
+
+sku=left(sku, length(sku)-1)
+length(col) - length(replace(col,'s',''))
+substring(col, 1, 5)
+charindex('/', col)
+trim(col)
+split(col,',')
+split(col,'/')[0] / split(col,'/')[1]
+split_part(col, ',', 1 )
+datediff(minute, current_timestamp, current_temistamp-1)
+to_date('12/12/2023','mm/dd/yyyy')
+date_format('12/12/2023','mm/dd/yyyy')
+explode(split(col,',')) as val
+reverse(split(reverse(url),'/')[0])
+like '%%'
+regexp_like '[A-Z]'
+regexp_replace('A-Z', 1)
+regexp_replace('A-Z', '') || ' ' || regexp_replace('1-9', '')
+concat(regexp_replace('A-Z', '') ,' ' ,regexp_replace('1-9', ''))
+soundex(name) == soundex(name2)
+jarowinkler_similarity(col1) = jarowinkler_similarity(col2)
+
+select get_json_object(raw_data, '$.name')
+select get_json_object(raw_data, '$[0].name')
+
+
+select to_json(struct(id, name))
+from tbl 
+group by col;
+
+select collect_list(name)
+from tbl 
+group by col;
+
+select collect_set(name)
+from tbl 
+group by col;
+
+select to_json(struct(id, name))
+from tbl ;
+
+
+select to_json(struct(id, name))
+from tbl 
+group by col;
+
+
+select to_json(map_from_enteries(struct(id, name)))
+from tbl 
+group by col;
+
+
+select to_json(map_from_enteries(array_construct(struct(id, name))))
+from tbl 
+group by col;
+
+select to_json(map_from_enteries(array_construct(struct(id, name)))) over (partition by col)
+from tbl ;
+
+concat_ws(-, col1, col2)
+
+select col, stringagg(id, ', ')
+from tbl 
+group by col;
+
+
+select col, listagg(id, ', ')
+from tbl 
+group by col;
+
+select id, current_date() as date from tbl ;
+select len(trim(ltrim(col,0)));
+
+
+id 
+1
+2
+7
+8
+9
+
+
+with temp as 
+(select 
+id, lag(id) over (order by id) as lg from temp)
+select 
+id, case when id-1=lg then 0 else ed+1 end as missing_start,
+, case when id-1=lg then 0 else lg-1 as end_start,
+from temp;
+
+
+--output of joins 
+
+with temp as 
+(select id, split(col,' ') as tweets from tbl )
+select tweets, count(*) 
+group by tweets; 
+
+--word count 
+with temp as 
+(select id, split(col,' ') as word from tbl )
+select word, count(*) 
+group by word; 
+
+--managed tbl 
+--by default stored in hive catalog, default database
+create table cpd as 
+select * from tbl limit 7  ;
+
+
+--external tbl 
+--can plugin external azure container location via sql ui 
+create table cpd as 
+select * from tbl 
+using delta
+location '/dbfs//';
+
+describe extended tbl_name;
+
+create table cpd as 
+select * from tbl 
+using csv
+location '/dbfs//'
+options (header=True);
+
+
+create table cpd as 
+select * from tbl 
+using parquet
+location '/dbfs//';
+
+
+--update, merge, grant, time travel  using delta
+--unity catalog allows coomom access control plane, not seperate hive catalog per worspkace
+
+
+grant select, update on table tbl to user 'test';
+revoke select, update on table tbl to user 'test';
+grant all previliges on table tbl to user 'test';
+
+--version are nothing but container files 
+select * from tbl as of version 1 ; 
+select * from tbl as of timestamp '2023-02-02'
+
+truncate table tbl; 
+delete from tbl;
+delet from tbl where name='test';
+
+alter table tbl_name rename to tbl2;
+alter table tbl_name rename column id to id_name; 
+alter table tbl_anme add column col5 varchar col7 varcharl; 
+alter table tbl_name drop column col5, col7; 
+
+select distinct id, name from tbl ;
+
+
+--catalogs , schema (database) cannot be created without unity catalog .
+
+create view view_name 
+select * from tbl where time_stamp='2023-02-02';
+
+drop view view_name;
+drop table tbl;
+
+Merge into tbl using 
+(select * from stage) s 
+on tbl.id=s.id and tbl.name=s.name 
+when matched then update set tbl.col1=s.col1, tbl2.col2=s.col2 
+when not matched the insert (tbl.id, tbl.name) values (s.id, s.name);
+
+select id, name , count(*)
+from tbl 
+where id between 2 and 7 
+group by id, name ;
+
+
+select id, sum(case when tbl.sku is not null and tbl2.marks is not null then 1 else 0 end) as sm 
+from tbl 
+left join tbl2 on tbl.id=tbl2.id;
+
+
+-----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+
+l = [1,2,3,4,4,4,5,5,5,5,6,7]
+
+d_start = {}
+d_end = {}
+for idx, ele in enumerate(l):
+  if ele not in d_start.keys():
+    d_start[ele] = idx 
+  else:
+    d_end[ele] = idx 
+	
+	
+n = input()
+c = []
+for ele in d_start.keys():
+  if int(ele) == n :
+    c.append(ele)
+	
+for ele in d_end_keys():
+  if int(ele) == n ;
+   c.append(ele)
+   
+print(c)
+
+
+for key, val in sorted(d.items(), key = lambda x:x[1], reverse=True):
+   print(key, val)
+    
+	
+[ key, val for key, val in sorted(d.items(), key = lambda x:x[1], reverse=True) ]
+
+
+l = [1,2,3,4,3,4]
+
+d={}
+
+for ele in l:
+  if ele not in d.keys():
+    d[ele]=1
+  else:
+    d[ele]=d[ele] + 1
+	
+print(d)
+
+
+s = 'I am a little man'
+d= {'vowels':0, consonants:0}
+
+v = 'aeiou'
+for ele in s:
+  if ele.strip().lower() in v:
+    d['vowels']=d['vowels']+1 
+  else:
+    d['consonants']=d['consonants']+1
+	
+print(d)
+
+
+s = """
+col1 col2 col3 
+1    2     3
+2    2     4
+3    2     6
+2    2     7
+"""
+d={}
+rows = s.split("\n")
+for row in rows:
+  if row.strip() ! = '':
+     col = row.split(" ")
+	 key = col[0]
+     val = col[2]
+	 if key not in d.keys():
+	    d[key]=val 
+	 else:
+	    d[key]=d[key]+val 
+print(d)
+  	 
+def check_anagaram(s1, s2):
+	if sorted(s1)==sorted(s2):
+	  return 0 
+	return 1 
+
+check_anagaram('I am an apple', 'apple I am ')
+
+
+l = [1,2,3,4,5]
+" , ".join(l)
+
+
+d = {"key 1":2, "key 2":7, "key 3":5, "key 4":9}
+s=0
+for key, val in d.keys():
+  if int(key.split(" ")[1])%2==0:
+    s = s + val
+
+print(s)
+
+m = 0 
+l = [1,2,3,4]
+for ele in l:
+ if ele> m:
+   m = ele 
+   
+print(m)
+
+
+
+s1 = [1,2,4,5,6]
+s2 = [1,2,3,3,4,5]
+
+s1 = set(s1)
+s2 = set(s2)
+s1.symmetric_difference(s2)
+s1.intersect(s2)
+s1.union(s2)
+
+s_diff1 = s1-s2     
+s_diff2 = s2-s1
+s_diff1.union(s_diff2)
+
+
+pip3 freeze | grep snowflake 
+pip3 freeze > requirements.txt
+
+virtualenv venv 
+source venv/bin/activate 
+vi requirements.txt 
+pip3 install requirements.txt 
+deactivate 
+
+l1 = [1,2,3,4]
+l2=l1 
+id(l1)
+id(l2)
+
+d1={"key 1":1, "key 2": 4}
+from copy import deepcopy
+dd = deepcopy(d1)
+id(d1)
+id(dd)
+
+
+l1 = [1,2,3,4, 7]
+l2=[1,2,3,4,5,6]
+c= []
+for ele in l1:
+ if ele in l2:
+  c.append(ele)
+
+
+l1 = [1,2,3,4, 7]
+l2=[1,2,3,4,5,6]
+c= []
+for ele in l1:
+ if ele not in l2:
+  c.append(ele)
+  
+for ele in l2:
+ if ele not in l1:
+  c.append(ele)  
+
+print(c)
+
+def test_fn(a, b, *l, o=7, **d):
+   print(a, b , l, o, d)
+   
+test_fn(1, 2, 3, 4, o=9, name='test', salary='7')
+
+l1=[1,2,3,4]
+l2=["fruits", True, 2, None]
+l1.extend(l2)
+
+l1=[1,2,3,4, ["fruits", True, 2, None]]
+c=[]
+for ele in l1:
+  if isinstance(ele, list):
+    for ele2 in ele:
+	 c.append(ele2)
+  else:
+    c.append(ele)
+	
+print(c)
+
+def check_palindrome(s):
+  if s==s[::-1]:
+    return True 
+  else 
+    return False 
+
+
+def check_armstrong(n):
+  s = str(n)
+  t = 0
+  mult = len(s)
+  for ele in s:
+   t = t + ele**mult
+  if t==n:
+    return 0 
+  else:
+    return 1 
+	
+	
+l = [1,2,3,4,5]
+partitions=2
+c=[]
+for x in range(0, len(l),partitions):
+  c.append(l[x:x+partitions])
+  
+s = "I am an apple"
+l = s.split(" ")
+for x in range(0, len(l), 2):
+  print(l[x]+' test')
+  
+  
+  
+l = [1,2,3,4,5]
+l[2:5]
+l[3:5]
+s='there is apple'
+s[2:4]
+
+l = [1,2,3,4,5,6]
+d={}
+for x in range(0, len(l), 2 ):
+  d[l[x]]=l[x+1]
+print(d)
+  
+
+for idx, x in enumerate(range(0, len(l))):
+  print(f"""element at {idx} is {l[x]}""")
+  
+  
+l1 = [1,2,3,4]
+t1 = tuple(l1) # faster and immutable 
+l1 = list(t1)
+s1 = set(l1)
+
+l1.insert(2, "fruits")
+l1.append("apple")
+  
+  
+  
+l = [1,2,3,4,5,6,7]
+i = iter(l)
+next(i)
+next(i)
+
+for x in range(0, len(l)):
+  next(i)
+  
+  
+def fibonacci_sequence(n):
+  a, b = 0, 1 
+  for x in range(0, n):
+    yield a 
+	s = a + b 
+	a = b 
+	b = s
+	
+for x in fibonacci_sequence(10):
+  print(x)
+  
+  
+def fibonacci_sequence(n):
+  if n <=1:
+    return n
+  else:
+    return fibonacci_sequence(n-1) + fibonacci_sequence(n-2)
+	
+for x in range(0, 10):
+  print(fibonacci_sequence(x))
+
+#create dynamic variables
+l = ['one', 'two', 'three']
+for ele in l:
+    locals()['var'+ele] = ele + '_test'
+    print(locals()['var'+ele])
+
+l = ['one', 'two', 'three']
+d= {}
+for ele in l:
+    d[ele] = ele + '_test'
+print(d)
+  
+  
+s = "apple is here"
+v='aeiou'
+vowels=0
+consonats=0
+for ele in s :
+  if ele.lower() in v:
+    vowels + = 1 
+  else:
+   consonats += 1
+   
+print(vowels, consonats)
+
+import logger 
+logger.setlevel()
+logger.info("INFO: Success")
+
+
+def HigherOrderFunction(fn):
+  def LowerOrderFunction(*args, **kwargs):
+     import time 
+	 t1 = time()
+     res = fn(*args, **kwargs)
+	 t1=2 = time()
+     print(f"time taken is {t2-t1}")  
+     return res	 
+  return LowerOrderFunction
+  
+  
+@HigherOrderFunction
+def some_function():
+  pass
+  
+  
+from datetime import time , timedelta 
+dd.strfttime('yyyy-mm-dd')
+s.strptime('', '')
+dd1 + timedelta('2 days')
+
+
+
+class some_class(object):
+   def __init__(self, name, age):
+     self.name = name 
+	 self.age = age 
+   
+   def inner_function(self):
+     print("hello")
+	 
+   def second_function(self):
+     self.inner_function()
+	 
+if __name__ = '__main__':
+  print("execute only if directly executed")
+  
+  
+  
+def some_function(n):
+  try:
+    int(n)
+  except Exception as e:
+    print(f"some excepion {e}")
+	raise("Exception")
+  else:
+    print("no exception")
+  finally:
+    print("after executed")
+	
+	
+class parentFunction1(object):
+   def __init__(self, name, age):
+     self.name = name 
+	 self.age = age 
+   def work(self):
+     print(self.name)
+	 
+class parentFunction2(object):
+   def __init__(self, name, age):
+     self.name = name 
+	 self.age = age 
+   def work(self):
+     print(self.name)
+  
+  
+class childFunction(parentFunction1, parentFunction2): 
+   def __init__(self, name, age):
+     parentFunction1.__init__(self, name, age)
+	 parentFunction2.__init__(self, name, age)
+	 # super().__init__(self, name, age)
+	 
+   def work(self):
+     print("new def")
+	
+   def new_job(self):
+      print("hello")
+   
+
+
+class Product:
+   def__init__(self, name, age):
+     self._name = name 
+	 self.__age = age
+  
+  @property  
+  def get_age(self):
+    return self.__age
+  
+  @classmethod  
+  def set_name(cls, name):
+    cls._name=name+'s'
+	
+  @staticmethod
+  def some_function():
+    print("some function")
+	
+	
+p = Product('test', 21)	 
+p.set_name('test2')
+p.get_age
+p.somefunction()
+Product.set_name('test')	
+
+
+
+for key, val in os.environ.items():
+  print(key, val)
+  
+  
+os.environ['some_var']='test'
+
+
+j = '{"id":123, 'tweets':'some#tweet#hash'}'
+
+import json 
+d = json.loads(j)
+tweets = d['tweets'].split('#')
+d={}
+for ele in tweets:
+  if ele not in d.keys():
+    d[ele]=1
+  else:
+    d[ele]=d[ele]+1
+print(d)
+
+
+d = {"key1":2, "key2":4}
+import json 
+j = json.dumps(d)
+import requests
+d = requests.request(method='post', payload=j, header='')
+rsponse = json.loads(d)
+try:
+ if response['status_code']==200:
+   print("success")
+ else:
+  print("fail")
+except Exception as e:
+  sleep(500)
+  d = requests.request(method='put', payload=j, header='')
+  
+  
+d= {'key':1, 'key2':[4,5,6], "key3":{"apple":1, "banana":2}}
+d['key2'][1]
+d['key3']["banana"] 
+  
+import threading
+
+t1 = threading.thread()
+t2 = threading.thread()
+t1.start()
+t2.start()
+t1.join()
+
+from multiprocessing import process
+
+p1 = process.process()
+p2 = process.process()
+p1.start()
+p2.start()
+p1.join()
+
+
+
+type(l1)
+type(s1)
+
+with open('dbfs://file', 'r+') as file:
+   lines = file.readLines()
+   statements = lines.split(" ")
+   
+   
+with open('dbfs://file', 'r+') as file:
+   file.write("I am here")
+   
+
+import sys 
+sys.exit(1)
+sys.argv[0]
+sys.argv[1]
+
+
+import os 
+os.getcwd()
+os.remove(file, recurse=True)
+os.makedirs(r'c://test/test2')
+
+
+c=[]
+for dir, subdir, files in os.walk('c://test/test2'):
+   for file in files;
+     if file.endswith('.txt'):
+	 c.append(file)
+	   
+	   
+n = lambda x:x*2
+n(2)
+
+l = [1,2,3,4]
+
+list(map(lambda x:x*2, l))
+
+
+def change_title(s):
+  return s.title()
+
+l = ['apple', 'banana', 'orange', 'pear']  
+  
+list(map(change_title, l))
+
+list(filter(lambda x:x%2==0, l))
+
+
+def check_int(n):
+ if isinstance(n, int):
+   return 1
+ else:
+   return 0 
+   
+list(filter(check_int, l))
+
+[ele for ele in l if ele%2==0]
+{ele for ele in l if ele%2==0}
+(ele else 0 for ele in l if ele%2==0)
+
+
+from package.module.class import function
+
+
+from dataclasses import dataclass 
+
+class Employee:
+  name: str 
+  age:int 
+  class:int
+  city: str 
+  
+e1 = Employee("test", 2, 3, 'test2')
+e2 = Employee("test2", 12, 13, 'test4')
+
+
+def fn(name: str) -> str:
+  return f"hello {name}"
+
+import duckdb as dd
+df = pd.read_csv("")  
+df1 = dd.query("select * from df").df()
+print(df1)
+
+d1 = {1:2, 3:4}
+d1 = {1:5, 6:7}
+{**d1, *d2}
+
+l1=[1,2,3,4]
+l2=[4,5,6,7]
+[*l1, *l2]
+
+l1 = [1,2,3,4]
+t1 = (4,5,6,7)
+list(zip(l1, t1))
+
+s = "Iamehare 2 there"
+d=0
+c=0
+for ele in s:
+  if ele.isdigit():
+     d +=1
+  else:
+    c+=1
+print(d, c)
+
+list(d.keys())
+list(d.values())
+
+
+for keys in d.keys():
+ return keys
+ 
+ 
+for val in d.values():
+ return val
+ 
+ 
+l = [1,2,3,4, 2]
+s=0
+for ele in l:
+  s +=ele
+print(s)
+
+l.max()
+l.count(2)
+l.sum()
+l.min()
+
+# use setup.py to package as EGG or wheel
+----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+
+
+
+from pyspark.sql import functions as f 
+from pyspark.conf import SparkConf
+
+# paramter can be also set in spark_defaults.conf or while spark-submit but overriden by run time parametrers
+conf = SparkConf().setAll([('spark.app.name','test'), ('spark.executor.memory','2G'), ('spark.driver.memory','2G'),  ('spark.default.partitions',400), # default partition 200
+('spark.master','yarn')])
+# can run on local[2] , number of threads in bracket 
+conf = spark.conf.set('abfs://storage_account@container.dbfs.core.net', '<sas token>')
+
+spark = SparkSession.builder.config(conf=conf).getOrCreate()
+spark.catalog.clearCache()
+
+# all caches are tied to one spark session 
+
+# can also use structTypes
+ddl = """
+id int, name string 
+"""
+
+ddl =  StructType([
+StructField("name", stringType, true),
+StructField("name", integerType, true)
+]
+)
+
+ddl =  StructType([
+StructField("name", stringType, true),
+StructField("nested", StructType([(
+      StructField("value1", StringType),
+      StructField("value2", StringType)
+  ]))
+]
+)
+
+# path can be local dbfs path or azure path after conf is injected 
+# in sql this path has to be configured via query editor
+fileDF = spark.read.format("csv").option("inferschema", 'false').option("header", 'true').option("delimiter", "|"). \ 
+option("multiline", True).option("path", "<path>").schema(ddl).load()
+. 
+connection_string = {
+'sfhost': '',
+'sfport';'',
+'sfuser':''
+'sfpass':''
+}
+
+fileDF = spark.read.format("snowflake").options(**connection_string).load()
+fileDF = spark.read.format("parquet").option("path", "<path>").load()
+fileDF = spark.read.format("json").option("path", "<path>").load()
+fileDF = spark.read.format("avro").option("path", "<path>").load()
+
+kafkadf = spark.readStream.format("kafka").
+option("kafka.bootstrap.servers", '<>'). \
+option('subscribe', 'invoices'). \ 
+option('startingOffets', "earliest"). \
+load()
+
+
+kafkadf = spark.readStream.format("socket").
+option("hosts", '<>'). \
+option('port', 'invoices'). \ 
+load()
+
+
+l = [1,2,3,4]
+sc = spark.sparkContext()
+df = sc.paralleize(l)
+spark.createDataFrame([('test', 2),('test2', 3)],['name', 'age'])
+spark.createDataFrame([()],['name', 'age'])
+df2 = df.where("1=2")
+pandas_df = df.toPandas() # force collect on driver 
+file_df = df.coalesce(1) # force collect on driver
+df = pandas_df.toDF() # distributes as spark df 
+
+# dataframe to rdd 
+df.rdd
+
+# rdd to dataframe 
+df = spark.createDataFrame(rdd, schema)
+
+df.collect() # list of row object 
+
+# one value 
+
+df.first()[1] # first column , start from 0
+df.collect()[1][2] # first row, second column 
+df.show(truncate=False)
+df.display()
+display(df)
+
+df.groupBy(f.expr("spark_partition_id()")).agg(f.expr("count(*) as cnt"))
+
+df = df.repartition(10) # can increase or decrease teh number of partitions, results in full shuffle
+df = df.coalesce(1) # can decrease the number of partition, lesser network shuffle than repartiton 
+df.repartition(100, "id", "name") # make sure the cardinality is not too high , not too low, depends on number of total cores in the machine . 
+# too high put high pressure on namenode, and no proper pruning of partition in filters, too low means skewed executors 
+df.rdd.getNumPartitions()
+# rdd is immutable and so is the dataframe, but every opeartion creates in a new memory space 
+# python being a dynmicaaly typed language the same variable starts pointing to the same memory location . 
+
+
+# creates subfolders, make sure cardinality is not too high or low , for above reason 
+df.write.format("csv").mode("overwrite").option("path", "<>").partitionBy("year", "month").save()
+
+# if no proper element of cardinality use bucketing , use hash to put elements in file 
+df.write.format("parquet").mode("append").option("path", "<>").bucketBY(100, "id").sortBy("id").save()
+
+# external table : manages metadata but not data, data stored in external locations, used in case of poc or migration project 
+# managed table : spark manages data and metadata, data stored in hive catalog (metastore), /dbfs/user/hive/warehouse can override by overridng 
+spark.sqk.warehouse.dir in spark_defaults.conf 
+
+df.write.format("delta").mode("overwrite").option("path", "<>").partitionBy("year", "month").saveASTable(<tbl_name>) # delta format supports acid, merge, time travel etc 
+
+# external as path
+df.write.format("parquet").mode("append").option("path", "<>").partitionBy("year", "month").saveASTable(<tbl_name>)
+
+# managed as no path
+df.write.format("parquet").mode("append").partitionBy("year", "month").saveASTable(<tbl_name>)
+
+
+df.write.format("jdbc").options(**connection).mode("overwrite").option("path", "<>").partitionBy("year", "month").save()
+df.write.format("snowflake").options(**connection).mode("overwrite").option("path", "<>").partitionBy("year", "month").option("lowerBound", 1) \
+.option("upperBound", 100000) \
+.option("numPartitions", 10).save()
+
+# parquet is the default file format for delta 
+
+# streaming dataframe 
+
+streamingdf = df.writeStream.
+format("kafka"). # socket 
+outputMode("append"). # complete, update (support aggregation, no aggregation then same as append) , append donot support aggregations
+option('kafka.bootstrap.servers','<>').
+option('topic', '').
+option('checkpointlocation','').
+trigger('processingTime = 10 sec'), # 'once', continous 
+start()
+
+streamingdf.awaittermination()
+
+
+# garbage collection in pyspark 
+can set via spark.conf.set 
+concurrent mark sweep cms :- use parallel thread for ganrbage collection, reduce pause times 
+G1GC :- focus on regions of most garbage , reduce pause times
+parallel GC :- uses multiple threads for garbage collection, more pause times than GIGC and conncurrent mark sweep.default garbage collector 
+
+
+
+--row vs columnn based storage 
+when less records read, row is good, lot of records column is good , columns are stored together
+
+
+OLTP vs OLAP 
+olap good for complex queries like snowflake, oltp, transaction based like postresql
+
+
+clustered vs non clustered index 
+clustered , data stored close to each other physically, only one 
+non clustered , like a leaf pointing towards data location 
+
+
+
+facts and dimension table:- product, store dimension, price, sales facts, snowflake, star schema, star, facts in between and dimensions as star nodes, snowflake, fact in betweem, dimesnion at nodes, but dimesnion linked to other dimesnion tables as primary key (composite key, combination of primary key), foreign key
+star denormalized simple
+start normalized complex, many joins required
+
+Big data warehouses can result in smaller data marts
+
+
+
+
+denormalization 
+one row, table
+
+normalization 
+multiple row or table 
+1NF :- column contain indivisible values 
+2NF :- columns depend on primary key 
+3NF :- non key attributes not depend on other non key attributes 
+
+
+
+serelization in pyspark 
+data is serealzied while storing in RAM, ease of movement across distributed network of computers.
+java easiest to use , but not perform best (default)
+avro compact binary format, with schema evolution support 
+kyro best for large datasets , requires more configuration 
+
+
+
+sc = spark.sparkContext()
+rdd = sc.textFile('file://')
+header = rdd.first()
+rdd2 = rdd.filter(lambda x:x!=header)
+rdd2.collect() # list of strings 
+
+rdd3 = rdd.flatMap(lambda x:x.split(","))
+
+rdd4 = rdd.map(lambda x:x.split(","))
+rdd5 = rdd4.map(lambda x : (x[0], x[2]))
+rdd6 = rdd5.filter(lambda x : (x[0]=='apple' & x[2]='banana') |  x[2]='guava')
+rdd6.take(10)
+
+rdd7.reduceByKey(lambda x, y : x+y)
+
+
+df.select(
+"id", 
+"name", 
+"age", 
+f.expr("case when id=1 then True else false end as new_colums"), 
+f.expr("input_file_name() as file_name"), 
+f.expr("row_number() over (partition by id, name order by time_stamp) as rnum"),
+f.expr("lead(start_date) over (partition by id, name order by start_date) as ld"),
+f.expr("listagg(id, '') over (partition by id, name order by time_stamp) as lagg"),
+f.expr("count_approx_distinct(col5) over (partition by id, name) as cnt"),
+f.expr("sum(col) over (partition by id, name order by col) as sm"),
+f.lit(1).alias("new column"),
+(col("marks")+col("average")).alias('new_column'),
+f.expr(""""marks + average as marks""")
+)
+# can use lit as well 
+# col not actual column 
+# can use f.expr to chain everything and write sql function 
+
+df = df.groupBy("sku", "upc").agg(
+f.expr("sum(marks) as sm"),
+f.expr("max(marks) as mx"),
+f.expr("count_approx_distinct(*) as cnt"),
+f.expr("count(*) as cnt"),
+)
+
+df = df.groupBy(f.expr("case when id=1 then True else False end")).agg(
+f.expr("sum(marks) as sm"),
+f.expr("max(marks) as mx")
+)
+
+cols = [col for col in df.columns if col.lower().endswith('_sales')]
+df.select(*cols)
+
+# no having, so do where after group BY
+
+df = df.where("sm=7")
+df.where(" (id=2 and name='test') or age=7 ")
+
+
+
+df1 = df.select("id", f.expr("explode(split(tweets,'#')) as val"))
+df1.groupBy("tweets").agg(f.expr("count(*) as cnt"))
+df.show(7)
+
+
+# stateteful streaming transformation 
+# tumbling window:- fixed window 
+# sliding window:- sliding window 
+# everything after watermark is rejected and not included in aggregations 
+
+df.withWatemark("timestamp", "1 hour").groupBy("id", Window("time", 10, 5)).agg(f.expr("count(*) as cnt"))
+
+# generate dynamic select
+
+condition = [ f"""nullif(trim({x}),'') as {x}""" for x in df.columns ]
+print(condition)
+df.selectExpr(*condition)
+
+
+# genearte dynamic where  
+
+condition=[]
+for x in df.columns:
+  condition.append(f"{x} is not null")
+  
+condition = " or ".join(condition)
+df.where(condition)
+
+
+condition = ["""get_json_object(raw_data), $.{x}""" for col in ['col1', 'col2']]
+df.select(*condition)
+
+# create a function and return data based on requirement 
+
+
+# create UDFs
+
+def check_column(col):
+   try:
+      int(col)
+	  if col is not None:
+		return 1 
+      else:
+	    return 0 
+   except:
+     return 0 
+	 
+	 
+spark.udf.register('check_column', check_column)
+
+
+df.withColumn("new_column", check_column(col2))
+df.select("id", check_column(col2))
+	
+	
+df.withColumn("new_column", f.expr("input_file_name()"))
+df.withCoumnRenamed("col", "col2")
+
+
+df.orderBy("id", f.expr("age desc"))
+
+# sortBy doesnot guarantee order, but faster and not on entire table, order based on partitions 
+
+
+
+df2 = kafka_df.select(f.expr("from_json(value, schema) as value"))
+df3 = df2.select("value.id", "value.name", f.explode("value.col").alias(newval))
+df4 = df3.withColumn("name2", newval.name).withColumn('age2', newval.age).drop(newval)
+
+df.cache()
+df.persist()
+df.unpersist()
+
+
+spark.sql("create table test (id, name)")
+spark.sql("use database testdb")
+spark.sql("grant access on table tbl to user user1")
+
+
+
+
+df.createOrReplaceGlobaltempView("temp_view") # accessible across spark session 
+spark.sql("select * from temp_view")
+
+df = spark.table("tbl_name")
+df.write.mode("delta").partitionBy("").saveAsTable() # global table , not local 
+df.write.mode("parquet").option("path", "<>").load()
+
+
+df.createOrReplacetempView("temp_view1") 
+df.createOrReplacetempView("temp_view2")
+spark.sql("""
+with temp as (
+select * from temp_view t1
+join temp2 t2 on t1.id=t2.id 
+)
+select * from temp""").show(7)
+
+
+unionDF = df.union(df2)
+unionDF.show(truncate=False)
+
+unionAllDF = df.unionAll(df2)
+unionAllDF.show(truncate=False)
+
+disDF = df.union(df2).distinct()
+disDF.show(truncate=False)
+
+
+e1 = selectDf.where("nullif(trim(heart_bpm),'') is null").withColumn('error', f.lit('Heart Rate Not received'))
+e2 = selectDf.where("nullif(trim(time),'') is null").withColumn('error', f.lit('Time Data Not received'))
+e3 = selectDf.where("heart_bpm <= 0").withColumn('error', f.lit('Pulse should be Valid'))
+e4 = selectDf.where("lower(trim(model)) = 'undef'").withColumn('error', f.lit('Tracker Not Identified'))
+e5 = selectDf.where("lower(trim(kcal)) <= 0").withColumn('error', f.lit('Calories Not Valid'))
+errorsDf = e1.unionAll(e2).unionAll(e3).unionAll(e4).distinct()
+errorsDf.groupBy("ip", "time", "heart_bpm", "kcal", "version", "model").agg(f.expr("""
+                                                                                   concat_ws(',',
+                                                                                   collect_list(error) )as error""")
+                                                                            ).display()
+
+# streaming df not support except
+# selectDf.exceptAll(errorsDf.drop("error")) .display() 
+selectDf.where("""
+    (nullif(trim(heart_bpm),'') is not null) and
+    (nullif(trim(time),'') is not null) and
+    (heart_bpm > 0) and 
+    (lower(trim(model)) <> 'undef') and 
+    (lower(trim(model)) <> 'undef') and 
+    (kcal <= 0)
+    """) .display()
+
+%sql
+%%bash # run bash commands
+
+
+
+dbutils.fs.ls('<azure>')
+dbutils.widgets.get('<paramter_name>', '<default_value>')
+dbutils.secrets.get('<scope_name>', key="my_key")
+dbutils.fs.ls('')
+dbutils.fs.cp('','')
+dbutils.fs.rm('', recurse=True)
+
+
+
+df.join(df2, col("id")=col("name"), "inner")
+df.join(broadcast(df2), col("id")=col("name"), "inner")
+
+# error class
+
+class Errorvalidation(object):
+    def __init__(self, df):
+        self.df = df
+
+    def error_validator(self, conditions):
+        """make this dynamic/control table driven going forward"""
+        # Initialize an empty DataFrame for errors
+        errorsDf = self.df.where('1 = 0').withColumn('error', f.lit(''))
+
+        # Create error DataFrames and union them
+        for condition in conditions:
+            error_df = self.df.where(condition["condition"]).withColumn('error', f.lit(condition["error_message"]))
+            errorsDf = errorsDf.unionAll(error_df)
+
+        # Remove duplicates
+        errorsDf = errorsDf.distinct()
+
+        # Group and aggregate errors
+        agg_expr = f.concat_ws(',', f.collect_list('error')).alias('error')
+        result = errorsDf.groupBy(*self.df.columns).agg(agg_expr)
+        return result   
+
+%run ../Utilities/errorValidation
+# calls the errorValidation module from utilities
+errorDf = Errorvalidation(selectDf)
+errorDf = errorDf.error_validator([
+    {"condition": 'nullif(trim(heart_bpm), "") is null', "error_message": 'Heart Rate Not received'},
+    {"condition": 'nullif(trim(time), "") is null', "error_message": 'Time Data Not received'},
+    {"condition": 'heart_bpm <= 0', "error_message": 'Pulse should be Valid'},
+    {"condition": 'lower(trim(model)) = "undef"', "error_message": 'Tracker Not Identified'},
+    {"condition": 'kcal <= 0', "error_message": 'Calories Not Valid'}
+]
+)
+
+
+# get a dictionary of values product 
+# broadcast variable 
+sc=spark.sparkContext
+val = sc.broadcast(d)
+
+
+
+# accumulator is kind of global counter 
+acc = sc.accumlator(0)
+
+
+
+# while joining streaming dataframe as well, can add watermark 
+
+
+
+# salting earlier for skewness
+# when key is skewed
+
+df1 = df.withColumn("salt_key", f.expr("concat(primary_col, rand())"))
+df1.repartiton(10, salt_key)
+
+
+# standalone
+
+spark-submit xyz.jar --spark.driver.memory='2G' --spark.executor.memory='3G'
+
+
+
+standalone/local :- in local no cluster manager local[4] (4 threads, * mean all cores in machine), local machine may be or using spark's own cluster manager , driver and worker process in same jvm
+can use resource manager .
+
+
+client vs cluster mode:- client mode like in jupyter notebook, driver on client computer, client is killed, spark dies
+cluster mode , driver and worker processes on cluster in background processes , 
+program is submitted driver jvm program is created by resource manager in some node, in application master container 
+once driver program is created it creates executor container in worker nodes with ram , cpu 
+
+since hadoop is distributed, so spark df i.e rdds are also distributed 
+
+
+
+jobs:- number of actions 
+stages:- number of wide transfromation (invlove more than 1 row, join, group by, network shuffle), multiple stages talk via stage buffer, can be parallel or sequential 
+tasks:- narrow transformation(select, where in parallel)
+
+
+
+catayst optimizer applies cost based, rule based optimizations (constant folding, dpp etc )
+
+spark has in memory computation, lower i/o involved in moving data from disk to ram and also partitioned data which makes it fast, but during shuffle/sort , during join, group by, result in network cost in movement across worker nodes.As built on hadoop or ADLS distributed fault tolerant storages, so spark is also fault tolerent.
+
+
+optimization Techniques 
+
+1> Adaptive query execution :- coalesce skewed partitition, not required salting now , try to change sort merge join to broadcast hash join 
+2> Dynamic partition pruning:- triggered by partitionBy, bucketBy , unnecessary partitions are pruned, ignored in run time 
+3> Query pushdown:- order of sql query , first on, join, then wide tranformation like group by, then narrow like select, then order limit 
+4> cache, persist, repartition:- cache in memory, if reusing multiple time dataframe , or hitting too many actions, but a hint, not a guarantee, 
+pushed out based on least recently used , repartitioon is costly, must be on column with medium cardiniality else too many unneccessary partition if cardinality high (so many repeated values) and pressure on namenode or too skewed parition if less cardinality (too few values).
+5> spark memory management:- driver memory+pyspark memory , executor memory (reserved memory+tranformation and cache memory (handle the limit well, controlled by parameter else OOM), 
+user defined function memory) + pyspark memory (for python workers)
+6> JDBC optimizations :- set lower bound upper bound, only one executor make connections, but launch parallel thread  
+7> Broadcast variable and joins:- if dataframe/variable si small enough, copy to all executors to avoid network shuffle (efault 10 MB, can be altered, max size 8 GB)
+8> spark sepculative execution:- if process is running slow then run on other worker to check if fast 
+9> spark dynamic resource allocation:- if very long process, run small processes fast, dynamically allocate resources.
+
+
+
+# autoloader automatically process files as they arrive, metadata is taken from checkpoint locatioon, can restart from the point of failure
+
+df = spark.readStream.format("cloudFiles").option("cloudFiles.format", "csv").schema(schema).option("path", "").option("header", True).load()
+
+
+# rather than spark.conf.set , can also mount azure container using dbutils.fs.mount , can use tenant id, application_id, secret 
+
+
+
+# can use existing columns to derive new columns 
+df.withColumn('new_column', f.expr("input_file_name()"))
+df.withColumn('new_column', f.expr("col1 + col2"))
+df.withColumn('new_column', col("col1) + col(col2"))
+
+
+l = ['col1', 'col2']
+
+df.dropDuplicates(*l)
+
+l = ['col1', 'col2']
+
+df.drop(*l)
+
+df.dropna('any') # drop if any column is null
+df.dropna('ALL') # drop if all column is null 
+df.na.fill({'gender':'unkown', 'age':0})
+
+df.count()
+df.distinct().count()
+
+df.cache()
+df  = df.count()
+
+# like most of the pyspark operations which are just dag of operations cache is also lazy , can invoke using count 
+
+# medallion architecture, bronze, silver, gold tables 
+
+# delta tables, can import dlt and annotate spark reads with @dlt.table , can add expectations using @dlt.expect()
+automatic worflow creation, live tables , create bronze tables, read from bronze tables in silver tables and thenn in gold tables, functions are used annotated
+with @dlt
+
+
+@dlt.table
+@dlt.expect('order_id_not_null', 'order_is is not null')
+def bronze_tbl():
+  return spark.read.format("csv").option('path','').load()
+  
+@dlt.table
+@dlt.expect('order_id_not_zero', 'order_id<>0')  
+def silver_tbl():
+ return dlt.read('bronze_tbl').select('order_id', f.expr('col1 + col2' as col))
+ 
+ 
+def gold_tbl():
+  return dlt.read('silver_tbl').select('order_id', f.expr(concat(col1,col2,col3) as col))
+  # can add transformations further 
+  
+  
+# for live tables 
+
+import dlt 
+
+@dlt.table
+@dlt.expect('order_id_not_null', 'order_is is not null')
+def bronze_tbl():
+  return spark.readStream.format("cloudFiles").option("cloudFiles.format", "csv").option('path','').load()
+  
+@dlt.table
+@dlt.expect('order_id_not_zero', 'order_id<>0')  
+def silver_tbl():
+ return dlt.read_stream('bronze_tbl').select('order_id', f.expr('col1 + col2' as col))
+ 
+ 
+def gold_tbl():
+  return dlt.read_stream('silver_tbl').select('order_id', f.expr(concat(col1,col2,col3) as col))
+  # can add transformations further 
+  
+  
+%run ../file/
+
+dbutils.fs.run(<notebook>, 60)
+
+Job cluster only one job 
+All purpose cluster multiple jobs and interactive queries 
+  
+  
+
+# https://learn.microsoft.com/en-us/azure/databricks/delta-live-tables/expectations
+
+
+# schedule jobs, manage alerts via ui, api 
+# databricks-cli to manage secret scopes 
+
+
+# Git integration with databricks repos, azure devops , jenkins 
+# https://learn.microsoft.com/en-us/azure/databricks/
+# https://learn.microsoft.com/en-us/azure/databricks/visualizations/visualization-types
+
+# https://learn.microsoft.com/en-us/azure/databricks/data-governance/unity-catalog/
+
+# 1-8 workers, 8 GB of ram, 4 cores (units of parallel execution, also depends how many threads are allowed per core)
+# All purpose cluster, interactive work loads and job processing, job cluster for just job trigger
+
+
+
+
+
+
+#####notes 
+
+
+
+1. Multithreading:
+
+
+import threading
+
+def calculate_square(number):
+    result = number * number
+    print(f"Square of {number} is {result}")
+
+if __name__ == "__main__":
+    for i in range(1, 11):
+        thread = threading.Thread(target=calculate_square, args=(i,))
+        thread.start()
+In this example, we use multithreading to calculate the squares concurrently. Each number's square is computed in a separate thread.
+
+2. Multiprocessing:
+
+
+import multiprocessing
+
+def calculate_square(number):
+    result = number * number
+    print(f"Square of {number} is {result}")
+
+if __name__ == "__main__":
+    with multiprocessing.Pool(processes=4) as pool:
+        pool.map(calculate_square, range(1, 11))
+Here, we use multiprocessing to calculate the squares concurrently. The Pool divides the work among multiple processes.
+
+3. Asynchronous Functions (async/await):
+
+
+import asyncio
+
+async def calculate_square(number):
+    result = number * number
+    print(f"Square of {number} is {result}")
+
+async def main():
+    tasks = [calculate_square(i) for i in range(1, 11)]
+    await asyncio.gather(*tasks)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+In this example, we use asynchronous functions to calculate the squares concurrently. The asyncio library allows us to write non-blocking code that can handle multiple tasks concurrently without the need for separate processes or threads.
+
+In summary:
+
+Multithreading: Uses multiple threads within a single process to achieve concurrency.
+Multiprocessing: Uses multiple processes to achieve parallelism.
+Asynchronous Functions: Uses the asyncio library to perform asynchronous operations in a single-threaded event loop, allowing for non-blocking concurrency.
+For CPU-bound tasks like the one in this example, multiprocessing is generally more efficient, as it utilizes multiple CPU cores. Async functions are better suited for I/O-bound tasks, where tasks often spend time waiting for external resources (e.g., network requests or file I/O).
+
+
+
+
+
+
+#########extra###########################################################################################################
+
+
+with 
+pre_final as (
+
+select * , 
+case
+when cast(split(week,'-')[2] as int ) in (1,2,3) then cast(cast(split(week,'-')[1] as int )-1 as varchar)
+else cast(cast(split(week,'-')[1] as int ) as varchar) end as FY 
+from combined_category_data
+)
+
+select substr(FY,3,2) as FY, week,
+CASE
+WHEN cast(split(cast(week as varchar),'-')[2] as int ) >= 4 AND cast(split(week,'-')[2] as int ) <= 9 THEN
+            'FY' || substr(FY,3,2) || ' 1H'
+        ELSE
+            'FY' || substr(FY,3,2) || ' 2H'
+    END AS  FY_
+
+####################################
+
+
+col
+anil
+200
+mohan 
+400
+
+
+
+
+with temp as 
+(select col, row_number() over (order by 1) rnum
+from tbl)
+select 
+case when rnum%2==0 then col else null end as col2,
+case when rnum%2%=0 then col else null end as col3,
+
+
+with temp as 
+(select col, row_number() over (order by 1) rnum
+from tbl)
+select col, lead(col) over (order by rnum) ld
+from tbl
+
+col2 col3 
+null anil 
+200  null 
+null mohan 
+400  null 
+
+WITH numbered_rows AS (
+  SELECT 
+    column_value,
+    ROW_NUMBER() OVER (ORDER BY some_column) AS row_num
+  FROM your_table_name
+)
+
+SELECT
+  MAX(CASE WHEN row_num % 2 = 1 THEN column_value END) AS col1,
+  MAX(CASE WHEN row_num % 2 = 0 THEN column_value END) AS col2
+FROM numbered_rows
+GROUP BY (row_num - 1) / 2;
+
+
+with temp as 
+(select col, count(distinct uuid) cnt from temp)
+select * from temp where cnt>1;
+
+linux 
+######
+
+
+ls -lrt 
+ls -lh 
+ls /dir/subdir/file.txt
+cd /dir/subdir/
+cat file.txt | head -n 10 | tail -n 10 | grep "2017" |  grep "2019" | wc -l 
+zcat file.gz
+grep 
+wc -l 
+chmod 777 filename.txt
+chmod 666 filename.txt
+chmod 777 -R AlbertsonsSFExports
+azcopy
+aws s3 ls 
+aws s3 cp
+mv /dir/subdir/file.txt /dir2/subdir2/file2.txt
+cp /dir/subdir/file.txt /dir2/subdir2/file2.txt
+cp -r /dir/subdir/*.txt /dir2/subdir2/.
+sudo su e3batch 
+su e3batch
+free -m 
+rm file.txt
+rm *.csv
+rmdir dir
+rm -r dir
+rm -rf dir
+sftp -i  private_file peng3b01@162.53.99.138
+mget filename.txt
+mput filename.txt 
+pwd
+cd ..
+vi filename.txt
+touch filename.txt
+docker exec -it airflow /bin/bash
+awk
+sed 
+grep -e pattern1 -e pattern2 -e pattern3
+find -name 'pattern*'
+whoami
+
+
+virtualenv myenv
+source myenv/bin/activate
+vi requirements.txt
+pip install -r requirements.txt
+deactivate
+
+zip myfile.zip filename.txt
+unzip myfile.zip
+history
+bash script.sh > wrapper.log
+sh script.sh >> wrapper.log
+echo > file.txt
+echo "hello"
+kill -9 <pid>
+ctrl + c, ctrl + z, right click to paste
+lscpu
+
+
+rename SME3.PRODUCT.230316210108.csv.gz archive/SME3.PRODUCT.230316210108.csv.gz
+
+%%bash
+%%sql
+
+clear 
+rm *.csv 
+
+search vi 
+
+esc /
+write what to serach 
+enter
+n for next
+
+esc shift : wq! or q!
+
+insert to change insert/append modes
+
+
+ssh using putty, moboxterm 
+ssinha@canopy.e3internal.com
+ssh private key
+ssh public key shared with admins generated by putty gen
+
+sh run_price_families.sh price_families lbl
+bash run_price_families.sh price_families lbl
+
+
+# run with & or tmux to run as background process
+
+# try downloading/uploading over network , throughput is of server, we just need to connect to server via our client ssh, databricks etc.
+
+
+cat wrapper_job_20230418183159.log | grep  "Postgress Record inserted successfully" | wc -l
+
+
+
+
+
+
+
+############################event hub#####################################################################################
+Databricks Pool 
+
+
+https://www.databricks.com/blog/2019/11/11/databricks-pools-speed-up-data-pipelines.html
+
+Databases 
+
+Database :- ACID
+A :- atomicity transaction either success or fail
+C :- consiteneny 100 debited from debit table then updated to credit table
+I :- isolation multiple transaction dont interfere with each other 
+D :- durability even after database crash, data is present , written in dask not ram 
+
+limitations 
+
+not high velocity 
+not urgent data 
+non relational data 
+dynamic schema 
+can't connect to data source directly, we can't replay data from an offset once machine restarted
+pace of generation may not be equal to pace of consumption of data 
+
+Event hub / Kafka is like a streaming database , or a log
+
+
+Azure Event Hub :- quickly store small events in queue 
+Azure Event grid :- event driven architecture, something happen, something has to change 
+Azure storage queues :- turn azure blob storage into messaging queue 
+Azure Service Bus:- central reliable messaging queue (read command)
+
+
+Event hub 
+event is triggered on a state change, publisher dont care how the event is handled 
+performance is essential 
+
+but in message the publisher has an expectation how consumer handles the message or a command 
+
+Decoupling :- storage queues 
+Speed/Scalability:- azure event hubs 
+reliability :- service bus 
+
+Producer 
+Event hubs (serealized) :- consumption doesnot mean event will go off , even if we miss something , we can replay data 
+Consumer 
+
+
+azure event hubs should have at least 2 partitions , consumer connect to specific partition, consumer may not see all event 
+offset , how many events consumed, measured in bytes 
+not permanent retention 
+Data capture :- move to cold storage, like azure blob storage to preserve 
+
+repeatable, temporary stream of events, support many consumers 
+
+Advantages of Event Hub 
+#######################
+can handle many concurrent connections to event producers
+we can increase the number of partitions (converyer belts)
+speed of conveyer belt (fast throughput)
+can add more consumers (groups)
+
+
+partition keys :- consumer connected to one partition, but we can divide things in logical order, coloured plates.pensylivania events one partition 
+may not be uniformly distributed,m california has less people 
+
+
+messaging portals :- mailbox , envelope size , mail size
+
+
+, https (website, generic protocol)  azure event hub dosnot support receiving event from https,
+kafka protocol (supported by event hub), AMQP (default) . from programmer persective its same. picture, josn, convert to raw bytes, mail carreer doesnot open 
+envelope . 
+
+event properties:- headers
+
+
+compare to kafka 
+################
+support low latency 
+protocol (mailboxes) kafka protocol supported 
+infrastructre (software receive and stores messages, nodes, like post offices) (can be replaced by azure event hubs)
+
+both handle events 
+at least one messaging 
+partitions (distributed computing)
+mesage order guarantee even on replay 
+
+
+
+Cluster/Namespace :- Every thing in cluster
+Topic (single event strings broken in partitions) called event hubs 
+partitions (splits an event in substring,scalability, different nodes supporting different partitions of same event/topic )
+offset (numerical identity to identify the partition currently played in the stream of events)
+consumer group :- groups treated as one consumer . 
+
+
+Azure event hub , cant change the number of partitions, we need to define new event hub , kafka can change 
+azure rettention period 1 to 7 days , kafka can be modified as we control the infrastucture 
+paas (platform as a service), kafka also has managed services like confluent kafka 
+
+
+Producing events 
+Storing Events 
+Consuming Events 
+
+
+subscription > resource group (containers) > event hub namespace (containers) > actual event hub 
+
+
+namespace (access and cost management)
+##############
+pricing tier 
+througput units 
+
+
+partitions we need (2-32) : can't change later , depends on how many concurrent readers we expect , each reader connected to a different partition
+message retention : how many days,1 for basic tier , enable data capture for long term retention 
+
+download azure cli
+
+azure cli 
+#########
+
+azcopy ls "https://prodmerchantdatacatalog.blob.core.windows.net/engage3-prod/Outbound/?sp=racwl&st=2022-10-13T16:17:30Z&se=2023-10-14T00:17:30Z&sip=20.22.237.211&spr=https&sv=2021-06-08&sr=c&sig=R3ib6B38qsvw17ysRM103zRWvD1fcMP%2BVxL7%2BLWTay8%3D" ./
+
+
+azcopy cp --recursive 'https://prodmerchantdatacatalog.blob.core.windows.net/engage3-prod/Outbound/Sales_2022-10-09.psv?si=engage-3-prod&sip=20.22.248.228&spr=https&sv=2021-06-08&sr=c&sig=0qflyV%2Fz9qZAAzVSXWtkoVic9UnwVpACvGEoGJ9OAoA%3D'
+azcopy cp "/home/ssinha/Price_20221004.psv" "https://engage3datapoc.blob.core.windows.net/e3public-dev/bevmo/sales/Price_20221004.psv?sp=racwdli&st=2022-07-11T05:23:28Z&se=2079-12-31T18:30:00Z&spr=https&sv=2021-06-08&sr=c&sig=gl6gJnlMZl53sCpK2EQXuOZeAN%2BPC13o6kLp5zHvsj4%3D"
+
+https://learn.microsoft.com/en-us/cli/azure/eventhubs/eventhub?view=azure-cli-latest
+https://learn.microsoft.com/en-us/cli/azure/databricks/workspace?view=azure-cli-latest
+https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/manage-resource-groups-cli
+https://learn.microsoft.com/en-us/cli/azure/manage-azure-subscriptions-azure-cli
+az login 
+
+
+1> create resource group 
+
+
+az group create --name cligroup --location eastus 
+az group create --name rg_learn --location eastus 
+
+2> creating event hub namespace 
+
+az eventhubs namespace create --name TestCLI --resource-group cligroup -l eastus 
+az eventhubs namespace create --name TestCLI7 --resource-group rg_learn -l eastus 
+
+3> create azure event hubs 
+
+az eventhubs eventhub create --name clihub --resource-group cligroup --namespace testCLI 
+az eventhubs eventhub create --name clihub7 --resource-group rg_learn --namespace testCLI7 
+az eventhubs eventhub create --resource-group rg_learn --namespace-name testCLI7 --name clihub7 --partition-count 4 --retention-time 2 --cleanup-policy Delete
+az eventhubs eventhub update --resource-group rg_learn --namespace-name testCLI7 --name clihub7 --partition-count 4
+az eventhubs eventhub consumer-group  create --consumer-group-name test-consumer --eventhub-name clihub7 --namespace-name testCLI7 --resource-group rg_learn
+
+az eventhubs eventhub list --resource-group rg_learn --namespace-name testCLI7
+az eventhubs eventhub delete --resource-group rg_learn --namespace-name testCLI7 --event-hub-name clihub7 
+
+az group delete --name rg_learn
+
+
+can create via ui 
+#################
+
+search for event hub namespace 
+namespace 
+standard, subscription, resourcegroup , location, throughput (auto inflate to to automatically scale up and down)
+Then create event hub 
+name, partition count (1-32). retention , capture (can save data to storage account)
+
+create shared access policy (root, send, listen, send)
+get connection string (endpoint url, name of shared access policy, shared access key )
+
+click on listen, copy connection string, primary key, secondary key 
+
+send, listen, manage 
+Endpoint=sb://eh-learn-namespace.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=FhX+G4hvqM3dA5A9ND+PkUEL2wGRv/88i+AEhFKpYaU=
+
+
+
+python 
+
+pypi event hub library to read events send with protocol
+connection string 
+shared access policy 
+serealziation method 
+checkpoint store (where in stream of events it left off, can use to azure storage or database or file)
+
+
+https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-capture-python
+https://www.geeksforgeeks.org/asyncio-in-python/
+
+
+
+eh-storage
+
+https://learnstorage7.blob.core.windows.net/eh-storage?sp=r&st=2023-09-25T08:46:43Z&se=2023-09-25T16:46:43Z&spr=https&sv=2022-11-02&sr=c&sig=YXlkoUh6jNItaAKcLNK3H4TQevlE1ujBu30nHDNxhu4%3D
+https://learnstorage7.blob.core.windows.net/eh-storage?sp=r&st=2023-09-25T08:46:43Z&se=2023-09-25T16:46:43Z&spr=https&sv=2022-11-02&sr=c&sig=YXlkoUh6jNItaAKcLNK3H4TQevlE1ujBu30nHDNxhu4%3D
+
+
+Consumer groups 
+
+name and offset 
+many consumers to consume as fast as event is produced 
+
+
+checkpoints (If one consumer fails, other picks from offset)
+Failover 
+Consumer groups
+
+kafka consumer groups different from regular event hub consumer groups 
+not viewable in azure portal 
+auto creation 
+can store offsets 
+spans a namespace than attached to one event hub 
+
+can add consumer group in azure portal inside event hubs , just a name 
+
+enable kafka in event hub is just a checkbox comes with standard automatically 
+
+SAS 
+OAuth
+Enable TLS (SASL_SSL)
+Port 9093 
+
+Types of Data 
+
+Metrics: coonections, requests, errors, messages and bytes, data capture to long term storage 
+Logs 
+
+Azure Monitor 
+
+got to event hub 
+Monitor > Metrics 
+
+Azure Blob Storage (object store, store as binary, for )
+Azure Data Lake Storage (ADLS Gen 2) (checkbox hierarchical name space to turn blob storage to adls gen2)
+
+Data capture settings for event hub 
+
+size window when want to capture data, how many mb before batch is triggered 
+choose the storage account and container 
+time window how many minutes before trigger batch 
+(first win whichever occurs first)
+Folder Format lots of files, folder format, event hub namespace > datetime or viceversa (stored as avro file, compact, binary format for actual data, json headers for shape of data)
+Avro designed for Data serealization to send over wire 
+hadoop
+
+max retention time for standard tier is just 7 days 
+
+Blob (binary large object) :  optimized for storing massive amounts of structures of data 
+
+
+storage account > container > blob 
+
+
+Block Blob (data stored as blocks, uploads fast)
+Append Blob (append only operation like logging, can't delete data, for smaller updates)
+Page Blob (read write access, tiny )
+
+Data redundancy (local redunant storage stored within same physical location )
+zone storage (different locations copy)
+geo storage (asynchrous copy data to a different region)
+
+Azure Data Lake Storage 
+Azure Data Lake Analytics (run analytics on large amount of data, like databricks)
+adls gen2 has real folders unlike simulated folders in azure blobs
+built on blob storage 
+hadoop compatible access 
+hierarchical namespaces 
+cheaper than gen1
+
+create storage account with hierarchical namespace, then container 
+
+event hub > featurs > capture > 2 minutes time window > every 50 mb > donot create empty files > azure storage account > year/month/day 
+
+Streaming Anaytics / Databricks 
+
+
+Real Time 
+Urgent and Expiring (shelf life)
+Windows of Time
+Live Database (Database not  optimized for speed, can use , but lot of schema needed)
+Complex Event Processing
+
+PAAS
+Scalable 
+Batch/Streaming/CICD/graphs/ML
+
+hadoop make use decreasing hardisk (rom) prices 
+spark make use of decreasing ram prices 
+
+
+# https://github.com/databricks/delta-live-tables-notebooks/tree/main/kafka-dlt-streaminganalytics
+# can also connect direct https://www.databricks.com/notebooks/iiot/iiot-end-to-end-part-1.html
+
+databricks creates its own resource group, storage accounts, containers
+
+
+https://www.databricks.com/blog/2020/12/22/how-to-manage-python-dependencies-in-pyspark.html
+
+
+databricks 
+
+maven dependency 
+
+
+https://k21academy.com/microsoft-azure/data-engineer/structured-streaming-with-azure-event-hubs/
+download azure cli 
+
+
+https://learn.microsoft.com/en-us/azure/event-hubs/azure-event-hubs-kafka-overview
+https://alexott.blogspot.com/2022/06/delta-live-tables-recipes-consuming.html
+
+# databricks cli
+
+https://learn.microsoft.com/en-us/azure/databricks/archive/dev-tools/cli/workspace-cli
+https://learn.microsoft.com/en-us/azure/databricks/archive/dev-tools/cli/clusters-cli
+https://learn.microsoft.com/en-us/azure/databricks/dev-tools/cli/#--set-up-the-cli
+https://gfranzini.gitbooks.io/tracer/content/support/command-line-mac-vs.-windows.html
+https://learn.microsoft.com/en-us/azure/databricks/archive/dev-tools/cli/clusters-cli
+
+
+##########################################################################################################################
+
+
+###################databricks sql interface###############################################################################
+
+
+/* 
+a> subscription / billing and monitoring , create subscription, set budget
+b> resource group  rg-dbw-dev-001
+c> resource -> databricks (dbw-dev-001) (comes with additional container, secret scope and network watcher)
+*/
+
+/*
+
+Unity Catalog
+
+Unity catalog (metastore->catalog->Schema->Tables/Views (user/group management, Metastore, Access Control)) , then compute resources per worspace is seperate 
+Before every workspace had hive metastore, access control and compute resources
+one unit catalog per region , maintained in adls account 
+still legacy hive metatsore is there but they donot have the benefits of unit catalog 
+
+
+
+A single place to administer all workspaces 
+Grant permission using ANSI sql 
+captures audit logs 
+captures data lineage 
+tag, document and search for data assets 
+
+Data Access control, Data Access Audit, Data Lineage, Data Discovery
+premium databricks worspace, workspace and metastore should be in same region, premium blob storage account as root container 
+
+
+*/
+
+
+/*
+Enabling Unit catalog 
+1> Azure storage data storage gen 2 + container (this is storage for unity catalog metastore)
+2> Access connector for Azure databricks 
+3> Unit catalog enabled databricks workspace 
+*/
+
+/*
+Data Lake (just raw file structures/unstructured, no schema, no acid etc) + delta enginee (adds capabilities of a warehouse) --> delta lake or data lakehouse 
+*/
+
+Set up unity catalog 
+--------------------
+
+
+1> search storage resource (one created with databricks will already be there) create one (premium block blob , locally redudant storage (data replicated in one data center),
+enable hierarchial namespace ) Please Note:- Databricks account creates one resource group and storage account.
+2> create container within storage account.
+3> set up access to databricks to unitycatalog storage account (search access connector for databricks an create)
+4> go to storage account created in step 1 and go to IAM , add role assignment storage blob data contributor , managed identity, select members and 
+select access connector for databricks 
+5> In iam role assignment can see assignment 
+6> create mestrore go to databricks , manage account , data tab , create metastore , select correct region , give adlks gen2 storage@container name ,
+copy resource id from access connector to databricks 
+7> In databricks add workspaces , one in same region can be selected , pricing tier should be premium 
+go to worspaces and can open , click and can see configurations and manage permissions , can see workspaces in metastore and delete , add users and 
+manage settings 
+(no access with azure created with epam id)
+
+
+--can create other external locations and programatically pass  (can use database in place of schema)
+
+create catalog catalog_name managed location url;
+create schema catalog_name.schema_name managed location 'abfss://container@storage_account.dfs.core.windows.net/';
+describe schema extended schema_name;
+create table catalog.schema.table(col1 string);
+describe table extended catalog.schema.table;
+
+
+(old method was to access an external location using sas token in spark.conf.set)
+
+create external location
+------------------------
+
+(steps as above but different )
+In databricks we have catalog, external data, storage credentials , copy and past connector id , now click on external locations 
+create location provide container@storage url, storage-credential , test connection
+can use it to create external tables, use external locations 
+
+Now create external location
+
+new acces connector for databricks 
+create storage account with hierarchical namespace premium, add a container 
+give 1 storage blob data contributor access to the storage container 
+
+catalog > external data > storage credential > give name ext-storage > copy resource id of access connector for databricks >
+external location 
+
+abfss://container02@storagee01.dfs.core.windows.net/
+
+/subscriptions/48c839e2-ee7a-40b1-8fd5-812ea7bf764c/resourceGroups/resourcegroup01/providers/Microsoft.Databricks/accessConnectors/accessConnector02
+
+can give access etc now
+
+external table 
+
+
+-- creating an external table USING a csv data file and specifying the header option as True (please replace the LOCATION with your own)
+create table
+station_data_csv
+(station_id STRING, station_name STRING)
+USING csv
+LOCATION 'abfss://citibike-ext@extstorage639.dfs.core.windows.net/station_data.csv' --please update the LOCATION path for your specific location
+OPTIONS (header=True);
+
+
+
+https://learn.microsoft.com/en-us/azure/databricks
+
+https://azure.microsoft.com/en-gb/pricing/calculator/
+
+
+Summary of unity catalog
+######################################################################################################################
+
+
+https://techcommunity.microsoft.com/t5/fasttrack-for-azure/working-with-unity-catalog-in-azure-databricks/ba-p/3693781
+
+
+1> managed and external table can be created in both hive catalog (default database) and unity catalog . Earlier we used to create manage table 
+normally and for external table we would inject spark.conf.set('<container>','<sas token>') and create table by giving path programmatically or in SQL 
+2> create access connector for azure databricks 
+3> created a premium block blob storage with hierarchical namespace 
+(databricks also creates it own storage ignore to hold hive catalog info, dbfs etc)
+4> create container 
+5> assign Storage Blob Data Contributor role in IAM , managed identity , select members and use access connector for databricks created 
+copy Resource ID
+/subscriptions/48c839e2-ee7a-40b1-8fd5-812ea7bf764c/resourceGroups/resourcegroup01/providers/Microsoft.Databricks/accessConnectors/access-coonector01
+6> Go to manage account , data, create metastore 
+unitycatalogmetadata@storagee001.dfs.core.windows.net
+assign to workspaces , worskapce is actually the databricks instance name databricks01
+congrats message will come (Enable Delta Sharing to allow a Databricks user to share data outside their organization, but hold on to this ), can edit , in workspaces can see all databricks instance in same region 
+in the user management can add users 
+create cluster and start 
+
+In the SQL editor can see the new catalogs, database(schema), tables created 
+
+
+%sql
+drop catalog IF EXISTS new_managed_catalog cascade;
+
+
+Let’s create our first catalog, and managed table.
+
+spark.sql('''create catalog if not exists myfirstcatalog ''') (by default creates information_schema database and default database)
+
+spark.sql('''create database if not exists myfirstcatalog.mytestDB''')
+
+#read the sample data into dataframe
+
+df_flight_data = spark.read.csv("/databricks-datasets/flights/departuredelays.csv", header=True)
+
+df_flight_data.createOrReplaceTempView("temp_tbl")
+
+ 
+
+%sql
+
+create table if not exists myfirstcatalog.mytestDB.myFirstManagedTable
+
+AS
+
+Select * from temp_tbl
+
+
+spark.sql("""create table myfirstcatalog.mytestDB.myfirsTBL(id int, name string)""")
+
+
+%sql
+insert into myfirstcatalog.mytestDB.myfirsTBL
+select 1 , 'apple' union all 
+select 2 , 'mango';
+
+%sql
+describe extended myfirstcatalog.mytestDB.myfirsTBL;
+
+Type MANAGED
+Location abfss://unitycatalogmetadata@storagee001.dfs.core.windows.net/568af27d-9634-42c9-9efc-d76d8a0d86f9/tables/1b549004-6d80-47df-8b04-68ca14252fdc
+Provider delta
+Owner somu.sinha727@outlook.com
+
+drop table drops both data and metadata no immediately but in 30 days 
+
+
+create table myfirstcatalog.mytestdb.trips_ext if not exists 
+select as from samples.nyctaxi.trips 
+location abfss://ext-storage@storagee001.dfs.core.windows.net/mytestdb/trips_ext;
+
+
+Now creating external table 
+
+catalog > data > external data 
+create external storage and location 
+abfss://ext-storage@storagee001.dfs.core.windows.net/
+grant permissions
+test connection 
+
+%sql 
+describe catalog samples;
+use catalog samples;
+show databases;
+use database nyctaxi;
+show tables;
+select * from trips;
+
+spark.sql('''create catalog if not exists myfirstcatalog ''')
+spark.sql('''create database if not exists myfirstcatalog.mytestDB''')
+
+
+%sql
+create table if not exists  myfirstcatalog.mytestdb.trips_ext
+USING DELTA 
+location 'abfss://ext-storage@storagee001.dfs.core.windows.net/mytestdb/trips_ext'
+select * from samples.nyctaxi.trips 
+
+%sql 
+select * from myfirstcatalog.mytestdb.trips_ext;
+
+%sql 
+describe extended myfirstcatalog.mytestdb.trips_ext;
+
+
+%sql 
+drop table myfirstcatalog.mytestdb.trips_ext;
+
+# metadata dropped but data not dropped from storage 
+
+#read the sample data into dataframe
+
+df_flight_data = spark.read.csv("/databricks-datasets/flights/departuredelays.csv", header=True)
+
+#create the delta table to the mount point that we have created earlier
+
+dbutils.fs.rm("abfss://dbkdata@adldbkunityctlg.dfs.core.windows.net/mytestDB/MyFirstExternalTable", recurse=True)
+df_flight_data.write.format("delta").mode("overwrite").save("abfss://dbkdata@adldbkunityctlg.dfs.core.windows.net/mytestDB/MyFirstExternalTable")
+# can also use option("path", "") # presence of path qualifies it as an external table 
+
+%sql
+create table if not exists myfirstcatalog.mytestDB.MyFirstExternalTable
+USING DELTA
+LOCATION 'abfss://dbkdata@adldbkunityctlg.dfs.core.windows.net/mytestDB/MyFirstExternalTable'
+
+
+# For Streaming
+
+(device_stream.writeStream.format("delta")
+        .outputMode("complete").option("checkpointLocation", "/dbfs/delta/events/_checkpoints/gold/device_stream").start("abfss://gold@storagee001.dfs.core.windows.net/device_stream/"))
+
+spark.sql("""
+create table if not exists dev.event_schema.gold_device_stream
+USING DELTA
+LOCATION 'abfss://gold@storagee001.dfs.core.windows.net/device_stream/'
+""")
+
+%sql
+select count(*) from dev.event_schema.gold_device_stream;
+
+(bpm_stream.writeStream.format("delta")
+        .outputMode("complete").option("checkpointLocation", "/dbfs/delta/events/_checkpoints/gold/bpm_stream").start("abfss://gold@storagee001.dfs.core.windows.net/bpm_stream/"))
+
+spark.sql("""
+create table if not exists dev.event_schema.gold_bpm_stream
+USING DELTA
+LOCATION 'abfss://gold@storagee001.dfs.core.windows.net/bpm_stream/'
+""")
+
+%sql
+select count(*) from dev.event_schema.gold_bpm_stream;
+
+# grant access
+%sql
+GRANT SELECT ON dev.event_schema.bronze TO `somu.sinha727@outlook.com`;
+GRANT USE SCHEMA, CREATE TABLE ON SCHEMA dev.event_schema TO `somu.sinha727@outlook.com`;
+
+
+create table
+station_data_csv
+(station_id STRING, station_name STRING)
+USING csv
+LOCATION 'abfss://citibike-ext@extstorage639.dfs.core.windows.net/station_data.csv' --please update the LOCATION path for your specific location
+OPTIONS (header=True);
+
+Type EXTERNAL
+Location abfss://ext-storage@storagee001.dfs.core.windows.net/mytestdb/trips_ext
+Provider delta
+Owner somu.sinha727@outlook.com
+
+Add more external locations 
+
+create containers bronze, silver, gold as external sources and tables under same storage in azure containers, enabel storage and location in external data, then abstract them as table as above
+write data see the file refresh in container and table is an abstraction of that file
+create storage, location under catalog , external data 
+abfss://silver@storagee001.dfs.core.windows.net/ , test connection
+checkpoint under local dbfs storage /dbfs/delta/events/_checkpoints/ (can create checkpoint directory in azure too) , test connection 
+For grant access look at the document (to same asset , multiple databricks instances i.e workspaces can be given access)
+dbutils.fs.rm("abfss://error@storagee001.dfs.core.windows.net/", recurse=True)
+can create reports out of these tables now.
+##########################################prod setup#################################################################
+
+%sql
+create catalog dev;
+######################################################################################################################
+
+SQL warehouses create , like cluster , choose serverless
+
+
+select tpep_pickup_datetime,tpep_dropoff_datetime,trip_distance,fare_amount,pickup_zip,dropoff_zip
+from samples.nyctaxi.trips;
+
+
+select tpep_pickup_datetime,tpep_dropoff_datetime
+from samples.nyctaxi.trips;
+
+go inside workspace, create folder and add query from there 
+
+queries refrence
+
+catalog.schema.table 
+catalog.database.table 
+
+use catalog samples;
+use database nyctaxi;
+select * from trips;
+
+
+database and schema are same in databricks unlike snowflake 
+
+
+need unity catalog to create catalog , create schema/database, create table etc , can also do from UI data tab
+otherwise by default can create hive_metastore catalog under default schema (database) stored in a configurable path /user/hive/warehouse 
+controlled by spark.sql.warehouse.dir 
+
+before unity catalog hive catalog metstore existed for each workspace, 	seperate access for workspaces and no synchronization between workspaces. 
+user, access management , grant permissions, single metstore , user audit logs , data assets lineage (created), tag and search data assets for multiple workspaces.any changes to security policies can be propagated.
+each worskapce still has hive mesttore for backward compatibility.
+
+requirements 
+##############
+premium databricks worskpace
+workspace and metastore should be in same region
+premium blob storage account as root container 
+
+
+Managed Table 
+
+Manages metadata and underlying data file
+When you drop a managed table the metadata and underlying data is deleted (by default stored in hive_metastore catalog (/dbfs/user/hive/warehouse/) under default database ) controlled by spark.sql.warehouse.dir 
+If we have permission to create unit catalog metastore as above, it will be created in unit catalog metastore.
+Managed Tables are the default when creating tables. 
+Delta Lake format (built on top apache parquet file format) table data as parquet files 
+delta logs created has benefits of delta table acid 
+hive metastore is also a catalog, has databases and tables within, table created within are still in delta format, can also create unity catalog , with storage container in azure, then tables within
+stored as parquet files in azure 
+hive metastore actually is also stored in azure container than got created automatically with databricks account in root folder, may not have permission 
+to view it.
+Dropping a managed in databricks sodt deletes the data, then deletes after 30 days.
+
+
+External Table
+
+Manage metadata only, structure on top of data stored somewhere else 
+Used when migration projects 
+Droping a table only drops the metadata and underlying data is unaffected 
+Must specify location while creating an extrernal table 
+
+Delta lake format, Parquet Format, orc format, csv format, json format, txt format , avro format 
+
+Managed external is independent of where we want to create the table , in hive metastore catalog or unity catalog.
+
+
+Course+Resources+-+SQL+Code.zip
+https://learn.microsoft.com/en-us/azure/databricks/lakehouse/medallion
+
+Bronze :- any file format 
+Silver :- Delta 
+Gold :- Delta 
+
+
+parquet file is columnar file format 
+
+
+when query is first run, its cached in memory or in disk.
+
+
+https://learn.microsoft.com/en-us/azure/databricks/sql/user/alerts/
+https://learn.microsoft.com/en-us/azure/databricks/sql/admin/query-caching
+https://learn.microsoft.com/en-us/azure/databricks/sql/admin/query-profile
+https://learn.microsoft.com/en-us/azure/databricks/sql/admin/query-history
+
+delta format is parquet files with additional acid and data governance properties 
+
+
+
+https://learn.microsoft.com/en-us/azure/databricks/sql/user/queries/query-parameters
+https://learn.microsoft.com/en-us/azure/databricks/sql/user/dashboards/
+# create graphs for each query editor with + symbol
+# then add to dashboards
+
+# can add user in azure 
+# resource group, IAM , add role assignment , Reader , Review and Assign , add user to databricks account as well manage account , add user , can add group
+and add user to group , go to worskpace and add permissions by adding new user or group 
+
+can manage user via admin settings and grant permissions 
+admin console groups entitelements 
+
+got to data and access metastores 
+
+access needs to be granted on object basis for users workspaces, clusters, warehouses etc  
+
+
+https://learn.microsoft.com/en-us/azure/databricks/security/auth-authz/access-control/sql-endpoint-acl
+https://learn.microsoft.com/en-us/azure/databricks/security/auth-authz/access-control/workspace-acl#folder-permissions
+https://learn.microsoft.com/en-us/azure/databricks/security/auth-authz/access-control/query-acl
+https://learn.microsoft.com/en-us/azure/databricks/security/auth-authz/access-control/dashboard-acl
+https://learn.microsoft.com/en-us/azure/databricks/security/auth-authz/access-control/
+
+https://learn.microsoft.com/en-us/azure/databricks/data-governance/unity-catalog/manage-privileges/privileges
+https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/security-grant
+https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/security-revoke
+https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/functions/is_account_group_member
+https://learn.microsoft.com/en-us/azure/databricks/ingestion/copy-into/tutorial-notebook
+https://learn.microsoft.com/en-us/azure/databricks/data-sharing/
+https://learn.microsoft.com/en-us/azure/databricks/workflows/jobs/jobs-2.0-api
+
+grant use schema to user <>;
+
+create or replace view course_project.citibike.vw_pii_demo
+select 
+case when is_account_group_member('test_group') then 'REDACTED'
+     else ride_id end as ride_id
+from tbl ;
+
+
+select * from course_project.information_schema.tables;
+select * from system.information_schema.tables;
+
+see lineage graph 
+
+
+https://www.youtube.com/watch?v=GN6ICac3OXY
+https://learn.microsoft.com/en-us/azure/databricks
+https://learn.microsoft.com/en-us/azure/databricks/security/auth-authz/access-control/workspace-acl
+https://learn.microsoft.com/en-us/azure/databricks/security/auth-authz/access-control/cluster-acl
+https://learn.microsoft.com/en-us/azure/databricks/security/auth-authz/access-control/
+https://learn.microsoft.com/en-us/azure/databricks/security/secrets/secret-scopes
+https://gfranzini.gitbooks.io/tracer/content/support/command-line-mac-vs.-windows.html
+https://learn.microsoft.com/en-us/azure/databricks/archive/dev-tools/cli/#--set-up-the-cli
+https://learn.microsoft.com/en-us/azure/databricks/archive/dev-tools/cli/clusters-cli
+https://learn.microsoft.com/en-us/azure/databricks/archive/dev-tools/cli/workspace-cli
+https://docs.databricks.com/api/azure/workspace/clusters
+https://learn.microsoft.com/en-us/azure/databricks/archive/dev-tools/cli/
+https://learn.microsoft.com/en-us/azure/databricks/dev-tools/vscode-ext/tutorial
+https://stackoverflow.com/questions/36345136/use-unix-based-commands-with-anaconda-in-windows-operating-system
+https://code.visualstudio.com/docs/python/python-tutorial#_run-hello-world
+C:\Users\Somu_Sinha\PycharmProjects\
+C:\Users\Somu_Sinha\source\repos
+# https://github.com/databricks/delta-live-tables-notebooks/tree/main/kafka-dlt-streaminganalytics
+# can also connect direct https://www.databricks.com/notebooks/iiot/iiot-end-to-end-part-1.html
+
+
+
+KA230912V5295709
+
+
+
+
+26.27 oct - 5 nov
+14, 15 nov -  21 nov 
+
+
+https://learn.microsoft.com/en-us/azure/databricks/
+
+C:\Users\Somu_Sinha\test.py
+
+
+--connect python in vscode
+https://learn.microsoft.com/en-us/azure/databricks/dev-tools/vscode-ext/tutorial
+https://learn.microsoft.com/en-us/azure/databricks/dev-tools/vscode-ext/dev-tasks/
+https://learn.microsoft.com/en-us/azure/databricks/data-governance/unity-catalog/compute
+https://code.visualstudio.com/docs/python/python-tutorial#_run-hello-world
+https://datasavvy.me/2022/11/23/creating-a-unity-catalog-in-azure-databric
+https://learn.microsoft.com/en-us/azure/databricks/data-governance/unity-catalog/enable-workspaces
+https://community.databricks.com/t5/data-governance/step-by-step-process-to-create-unity-catalog-in-azure-databricks/td-p/6562/page/2
+
+--connect databricks to visual studio code 
+https://www.youtube.com/watch?v=Quh1TuJQurA
+https://www.youtube.com/watch?v=tThmRuyp2cA
+https://www.youtube.com/watch?v=M2Et5aBj2aw
+
+subscription > resource group > databricks|adls gen2 etc 
+
+
+https://learn.microsoft.com/en-us/azure/databricks/administration-guide/account-settings/account
+https://learn.microsoft.com/en-us/azure/databricks/administration-guide/account-settings/
+
+
+
+
+https://learn.microsoft.com/en-us/azure/databricks/data-governance/unity-catalog/get-started#requirements
+
+
+Visual Studio Professional Subscription
+     
+
+#############
+Documentation
+##############
+https://learn.microsoft.com/en-us/azure/databricks/
+https://spark.apache.org/docs/3.1.1/api/python/reference/pyspark.html
+https://docs.python.org/3.11/tutorial/index.html
+https://docs.snowflake.com/en/sql-reference
+https://git-scm.com/docs
+
+###########################################################################################################################
+
+
+Softwares
+#########
+Pycharm
+Dbeaver
+Mobaxterm
+Anaconda (Jupyter)
+VSCode Professional
+Cygwin
+GitBash
+Azure CLI
+
+#######################################################Db Connect VS Code################################################
+
+GIT repo in web UI 
+and User Settings Linked Accounts, sign in 
+need to give access in github applications too 
+https://github.com/settings/installations/42236144
+create feature branch 
+create pull to avoid merge conflicts 
+can use git notebooks to run jobs as well
+https://learn.microsoft.com/en-us/azure/databricks/repos/
+https://www.youtube.com/watch?v=k9Kuz19ByNg
+https://learn.microsoft.com/en-us/azure/devops/repos/?view=azure-devops
+https://www.databricks.com/blog/2022/08/22/feature-deep-dive-watermarking-apache-spark-structured-streaming.html
+
+CICD 
+
+
+Event Hub/kafka is like a funnel , when we try to put oil in a jar, without it gets scattered
+can also replay, live database
+speed of generation may not be equal to speed of consumtipn, can manage throughput 
+
+
+
+https://adb-2066419697562895.15.azuredatabricks.net/?o=2066419697562895#notebook/1360466229820364/dashboard/4384162943802101
+https://adb-2066419697562895.15.azuredatabricks.net/?o=2066419697562895#notebook/1360466229820364/dashboard/4384162943802101/present
+
+
+somu.sinha727@outlook.com
+Golu123@
+
+
+Azure event hub Partitions are a data organization mechanism that relates to the downstream parallelism required in consuming applications. 
+The number of partitions in an event hub directly 
+relates to the number of concurrent readers you expect to have. Learn more about partitions.
+
+
+https://learn.microsoft.com/en-us/answers/questions/785512/is-databricks-available-in-free-tier-and-how-can-i
+
+
+
+DbConnect/Vs Code Integration
+##############################
+
+Extensions > Databricks > Databricks SQL 
+copy http path from warehouse in databricks sql 
+daatbricks symbol left , configure via 
+gear icon, type database url from chrome
+
+https://adb-604768739209769.9.azuredatabricks.net/
+set .databrickscfg
+
+[<some-unique-profile-name>]
+host = https://adb-2066419697562895.15.azuredatabricks.net/
+token = dapibcc8dc2b2950c9ee564927238219e95d-3
+cluster_id = 0922-084852-v9x2rot4
+
+user settings> developer > generate access token dapi6218cf408e3f3621d194afd7c6d60afb-3
+
+admin settings to give access to users 
+
+got to clusters and copy cluster id 0928-081253-okm4hk59
+
+similarly set .databricks-connect 
+
+view > configure autocomplete for databricks global 
+
+use azure cli to login
+
+unity catalog must be enabled 
+
+install required python version 
+
+
+Python: Select Interpreter in view > command palette 
+
+pip install 'databricks-connect==14.0.0' 
+
+edit 
+%USERPROFILE%\.databrickscfg
+
+[default]
+host = https://adb-604768739209769.9.azuredatabricks.net/
+token = dapi6218cf408e3f3621d194afd7c6d60afb-3
+cluster_id = 0928-081253-okm4hk59
+
+
+%USERPROFILE%\.databricks-connect
+{
+  "host": "https://adb-604768739209769.9.azuredatabricks.net/",
+  "token": "dapi6218cf408e3f3621d194afd7c6d60afb-3",
+  "cluster_id": "0928-081253-okm4hk59",
+  "org_id": "0",
+  "port": "15001"
+}
+
+use it to autorize databricks instance and cluster 
+
+create vnenv command pallete , use requirements.txt
+
+python3 -m venv .venv
+
+
+
+Pycharm 
+
+edit 
+%USERPROFILE%\.databrickscfg
+
+[default]
+host = https://adb-604768739209769.9.azuredatabricks.net/
+token = dapi6218cf408e3f3621d194afd7c6d60afb-3
+cluster_id = 0928-081253-okm4hk59
+
+
+%USERPROFILE%\.databricks-connect
+{
+  "host": "https://adb-604768739209769.9.azuredatabricks.net/",
+  "token": "dapi6218cf408e3f3621d194afd7c6d60afb-3",
+  "cluster_id": "0928-081253-okm4hk59",
+  "org_id": "0",
+  "port": "15001"
+}
+
+
+View > Tool Windows > Python Packages
+check version (should sync with databricks version)
+databricks-connect PyPI repository
+
+
+https://docs.databricks.com/en/dev-tools/databricks-connect.html
+
+# test code 
+
+from pyspark.conf import SparkConf
+from databricks.connect import DatabricksSession
+from databricks.sdk.core import Config
+config = Config(profile="default", cluster_id="0928-081253-okm4hk59")
+conf = SparkConf().setAll([('spark.app.name', 'test-app')])
+spark = DatabricksSession.builder.sdkConfig(config).getOrCreate()
+df = spark.createDataFrame([('apple','2'), ('banana','3')],['col1','col2'])
+df.show()
+
+
+
+from databricks.connect import DatabricksSession
+from databricks.sdk.core import Config
+
+def DatabricksConnect():
+    config = Config(profile="default", cluster_id="0928-081253-okm4hk59")
+    spark = DatabricksSession.builder.sdkConfig(config).getOrCreate()
+    return spark
+	
+	
+conda create -n test_env python=3.6.3 anaconda
+conda activate test_env
+pip install -r requirements.txt
+conda deactivate
+conda remove -n test_env --all
+
+pip freeze > requirements.txt
+
+
+
+VS Code 
+#######
+
+Unit catalog must be Set 
+open vs code from anaconda 
+
+%USERPROFILE%\.databrickscfg
+
+[default]
+host = https://adb-604768739209769.9.azuredatabricks.net/
+token = dapi6218cf408e3f3621d194afd7c6d60afb-3
+cluster_id = 0928-081253-okm4hk59
+
+
+%USERPROFILE%\.databricks-connect
+{
+  "host": "https://adb-604768739209769.9.azuredatabricks.net/",
+  "token": "dapi6218cf408e3f3621d194afd7c6d60afb-3",
+  "cluster_id": "0928-081253-okm4hk59",
+  "org_id": "0",
+  "port": "15001"
+}
+
+In anaconda 
+python3 download python 
+conda in admin mode 
+conda install m2-base
+conda create -n pocenv
+conda activate pocenv
+pip install -r requirements.txt
+conda deactivate
+conda remove -n pocenv --all
+
+pip freeze > requirements.txt
+
+pip install azure-eventhub==5.2.0
+pip install azure-storage-blob==12.6.0
+pip install avro-python3==1.10.1
+pip install Faker==19.6.2
+pip install colorama==0.4.6
+pip install databricks-connect==14.0.0
+pip install databricks-sdk==0.9.0
+conda install ipykernel
+conda install jupyter
+
+pip uninstall databricks-connect
+pip uninstall databricks-sdk
+
+pip uninstall azure-eventhub==5.2.0
+
+In Vs Code 
+
+
+
+Python: Select Interpreter , choose conda env 
+
+Databricks 14.0 (includes Apache Spark 3.5.0, Scala 2.12)
+conda info --envs 
+
+ctrl+c to stop code 
+
+
+In terminals use cmd and python 
+
+
+add this to run code from other packages 
+
+
+import sys
+sys.path.append("../StreamingAPP")
+
+view command palette databricks autocomplete
+
+
+for ipynb file, select the same conda interpreter 
+
+unistall pylance from extensions to autocomplete to work
+
+Upload and run file on databricks 
+run file on databricks as workflows 
+
+
+https://docs.databricks.com/en/notebooks/best-practices.html
+
+
+#############################################Git Processes##############################################################
+
+somusinha3@penguin:~$ git --version
+git version 2.30.2
+somusinha3@penguin:~$ ssh-keygen -t rsa -b 4096 -C "somu.sinha3@gmail.com"
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/somusinha3/.ssh/id_rsa):
+Created directory '/home/somusinha3/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/somusinha3/.ssh/id_rsa
+Your public key has been saved in /home/somusinha3/.ssh/id_rsa.pub
+The key fingerprint is:
+SHA256:e28KB07qr/PdpVmN7nt8dGBGTEQjgthZBxn5bDxJKCc somu.sinha3@gmail.com
+The key's randomart image is:
++---[RSA 4096]----+
+|       o +=*o==  |
+|      . E =o..o. |
+|         + = o   |
+|            B +  |
+|        S  . + . |
+|       + o     oo|
+|      . + o   +oo|
+|     ..  = o.*  +|
+|      o=o oo=.+o.|
++----[SHA256]-----+
+somusinha3@penguin:~$ cd /home/somusinha3/.ssh
+somusinha3@penguin:~/.ssh$ ls
+id_rsa  id_rsa.pub
+somusinha3@penguin:~/.ssh$ cat id_rsa.pub
+chmod 600 id_rsa.pub
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDZ5znmMsWXEfMeYmfO8YeeUhoF3ELvOBvopUhCinywVdVaKkCIfMImYCAcTBVo2Wg1DxKGDphENhThASyIq2t8/JAzFJIkxvJYGUE1ysDc1JXtR1phINIh05YI5tKIAPZ+/3o8tnNm+Sj5EX5A+03uCuHKlahovoAKQZtKXvR3NTjTKTgdwzG2DdYTAiJbdzSL7KLLn86b2Fbxubfg4G+U6wvmhBhtNJxjeZuqxBDO3UZwQ0N8prLxUm1NxO6yIea9IVuTHaaBI26CY5ksFIxQud3XVy933gYKfJraBNSshwQmPfOP4lLxMFVvg3OrIkVhozH/GC6tGXc2NT9tJxUHWyVrjFU8PR+iKIlfnqec0y6TLt7L7/8t27eHow8qlo5U6gT7PAeUkt9K0VjirWxmj1Ec8UNca4GXeSlisb3IH3ZYRpYFxK/ajMHsES4dD0BlAGsQd4ZS8hub4SkvM8H/mqUvwvLkJRLxYC/mHJ2ZOcNW4RyLYtdvTNvMlKvW1q3VEn56pXWW/dxdUNaTVR5Pg+3hDbN2rWzdF+DQp2MpTAhDj3NbX5VPYmJEyYaXOvJpZbYRJfqRqAtBC4yLIubpQMq8FEF9dvj9NbuDQEHTUrzuqskp6zTxO8WFYNHgMkomD3LNF5jD7k+D2hkkKF5hk5g5Pz3aD53NbfNKev5bVQ== somu.sinha3@gmail.com
+somusinha3@penguin:~/.ssh$ eval "$(ssh-agent -s)"
+Agent pid 818
+cd git_pull
+somusinha3@penguin:~/.ssh$ ssh-add -K /home/somusinha3/.ssh/id_rsa
+Enter PIN for authenticator:
+Provider "internal" returned failure -1
+Unable to load resident keys: invalid format
+somusinha3@penguin:~/.ssh$ ssh-add /home/somusinha3/.ssh/id_rsa
+Identity added: /home/somusinha3/.ssh/id_rsa (somu.sinha3@gmail.com)
+
+
+
+windows
+
+ssh-keygen -t rsa -b 4096 -C "somu.sinha@engage3.com"
+eval "$(ssh-agent -s)"
+ssh-add /c/Users/AL2485/.ssh/id_rsa
+
+# https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent
+
+
+
+###########
+
+git checkout -b master
+git push -u origin  master
+git checkout -b qa
+git push -u origin  qa
+git checkout -b dev
+git push -u origin dev
+eval "$(ssh-agent -s)"
+ssh-add /home/e3custdataload/.ssh/git_private
+Identity added: /home/e3custdataload/.ssh/git_private (/home/e3custdataload/.ssh/git_private)
+
+
+cp -r lighthouse_link_extracts /local/home/e3custdataload/docker-airflow/dags/2022-03-23/engage3-etl-implementations.lighthouse_exports_automation/lighthouse_link_extracts
+
+rm -rf git_pushes_2022_03_23
+
+
+
+
+git checkout -b master
+git add .
+git commit -m "Lighthouse codes"
+git push -u origin  master
+git checkout -b qa
+git push -u origin  qa
+git checkout -b dev
+git push -u origin dev
+
+if already exist 
+git checkout master 
+
+
+git clone <branch>
+git checkout <branch>
+git add . / git add <file1> <file2>
+git status
+git commit -m <commit-msg>
+git push
+
+
+git checkout master
+git merge branch_1 / git rebase branch_1
+
+
+
+Azure Devops CICD
+###################################################################
+
+
+
+Create Azure devops Account 
+
+https://dev.azure.com/
+organization 
+project 
+no access to change project name 
+initialize , a readme.md file will be created 
+main branch will be created 
+click
+create "release" branch based on main branch in azure devops 
+
+go to databricks 
+
+https://adb-604768739209769.9.azuredatabricks.net/
+enable untiy catalog metastore01 as above , now can create catalog, database (schema), table etc as above 
+Right click repos and create folder FitnessTracker, inside folder configure source control git/azure devops 
+set user name password , we can username and password generate it in azure devops and feed in databricks 
+
+In databricks create feature branches based on the release branch, and pull once always as good practice 
+create notebooks in feature branch  
+
+
+right click on the repository and choose git operation
+
+Developement Lifecycle
+
+clone the project from teh source control 
+create your feature branch 
+write code , unit test , commit 
+raise a pull request to merge the feature branch 
+then merge to master and cicd from there 
+
+single/multinode cluster 
+donot use photon 
+commit code using databricks
+
+https://learn.microsoft.com/en-us/azure/databricks/notebooks/best-practices
+
+########databricks add ons
+
+user settings > linked accounts > git credentials 
+use developer also 
++ icon will let us add visualization 
+
+
+https://adb-604768739209769.9.azuredatabricks.net/?o=604768739209769#notebook/3494381429241978/dashboard/2455937282512244
+https://adb-604768739209769.9.azuredatabricks.net/?o=604768739209769#notebook/3494381429241978/dashboard/2455937282512244/present
+
+
+##########################secret scope set up in databricks#########################################
+
+
+Dbutils Secret Scope 
+######################################################################################################################
+search for azure key vault resource in azure , resource group , region etc 
+access configuration vault access policy , check access policy create, list, update, create, import, delete, recover 
+once resource created, under objects , secrets, generate/import , manual, create secret databricks-secrets-639
+go to properties , copy vault uri and resource id
+
+In databricks open in new tab, cut the url till # 
+
+https://adb-604768739209769.9.azuredatabricks.net/onboarding?o=604768739209769#secrets/createScope
+add the name of azure key vault , All Users,  
+copy copy vault uri and resource id in databricks and click on create 
+https://databricks-secrets-007.vault.azure.net/
+/subscriptions/48c839e2-ee7a-40b1-8fd5-812ea7bf764c/resourceGroups/resourcegroup01/providers/Microsoft.KeyVault/vaults/databricks-secrets-007
+
+dbutils.secrets.get("databricks-secrets-007", key="ehendpoint")
+result Redacted
+can 
+for x in dbutils.secrets.get('databricks-secrets-007', key="ehendpoint"):
+  print(x)
+
+# can also create key versions in azure key vault

@@ -908,7 +908,12 @@ p1.start()
 p2.start()
 p1.join()
 
+package with __init__.py
+module are python files 
+class and def (methods)
+from packgage.module import Class
 
+setup.py to builod egg, whl file
 
 type(l1)
 type(s1)

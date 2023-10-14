@@ -1723,8 +1723,8 @@ For CPU-bound tasks like the one in this example, multiprocessing is generally m
 
 
 
-
-#########extra###########################################################################################################
+*******************************************************extra*******************************************************
+*******************************************************************************************************************
 
 
 with 
@@ -3206,4 +3206,238 @@ az eventhubs eventhub list --resource-group resourcegroup01 --namespace-name tes
 az eventhubs eventhub delete --resource-group resourcegroup01 --namespace-name testnamespaceCLI7 --event-hub-name testeventhub7  
 
 az group delete --name resourcegroup01
+
+
+**************************************************************************************************************************
+**************************************************************************************************************************
+
+
+
+------------------------------------------------------------------------------------------------------------
+Apache Spark 
+------------------------------------------------------------------------------------------------------------
+
+
+Distributed computing framework, we can process the data in multiple computers
+breaks data in chunks based on split size, also keep a copy of data in other computers 
+breaks actions into jobs, per wide transfromation one stage, per narrow transformation task
+then 
+in memmory computation, not disk to memory I/O so fast , just creates dag in mmeory lazy evaluate
+
+hdfs, azure , s3 data is already distributed , each worker node one or many partitions of file, also copy in other nodes 
+but these chunks are in disk actually 
+spark lazily will load the partition in memory and call as rdd , example 4 rdd partitions, then 4 tasks, now it sees the program
+narrow transformation like filter , select (narrow transformation) in one task , and execute them in parallel in computers
+now these tasks are logically grouped under some stage, lets say, we need group by or join (wide transformation) 
+and we need data from multiple computers memory so they are handled by stages, the also shuffle the data and talk with each other with stage buffer 
+jobs trigger the construction of these execution plans by analysing the rdd lineage when an action like count, show is invoked, so dont execute so many , it will 
+unnecessarily load dags in memory with data   
+once all jobs are finished spark application is finished
+many action so many job hence many execution plans, data loaded in memory sperately per job, until cached (this is also not guarantee), 
+multiple times same data may be loaded in memory , create network traffic and resource issue will be there 
+so if hitting so many action or calculation df in a loop , use cache, it is costly , also remember to uncache
+
+1> data partitin in disk loaded to memory rdd 
+2> partition in nodes task parallel , execute select , where 
+3> stages make these inter node tasks to talk like group, join wide with a buffer and shuffle 
+4> now job trigger these stages and tasks
+5> many jobs many such exeuction units (stage and tasks), so be careful
+6> same data loaded many times in memory, so hit less actions and carefully cache 
+
+
+--------------------------------------------------------------------------------------------------------------------------------------
+Apache spark missing features 
+--------------------------------------------------------------------------------------------------------------------------------------
+
+Data Storage Infrastructure
+Acid Transaction Capabilities 
+Metadata Catalog
+Cluster Computing Infrastructure
+Automation API tools 
+
+---------------------------------------------------------------------------------------------------------------------------------------
+Databricks 
+---------------------------------------------------------------------------------------------------------------------------------------
+
+spark on cloud 
+cloud storage integration 
+acid transaction via delta lake integration 
+unity catalog for metadata management 
+cluster computing cluster 
+photon query engine 
+at least 5 X faster apache spark 
+notebooks and workspaces 
+Code in any language and interoperate 
+handle both structured and unstructured data
+many ways to write code , apis for people towards sql, python and R 
+administration controls 
+optimized spark 
+Automation tools 
+SQL analytics
+Admin controls 
+Databases and Tables 
+Data Lake Integration
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+Azure Databricks 
+-------------------------------------------------------------------------------------------------------------------------------------------
+First part service, like any other service, Unified Billing , Not seperate billing 
+azure devops 
+azure active directory , single sign on , security feature 
+azure storage 
+azure data services (azure sql, synapse db and cosmos db )
+azure monitoring and iot hub and event hub 
+power bi and azure ml 
+azure data factory 
+
+portal.azure.com 
+
+premium has azure sql and access controls than standard tier.
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+Azure Databricks Architecture
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+once databricks file system is created , it creates it own storage container etc, network security group, virtual network and clusters within it i.e VMs, which is used to store files from dbfs its called dataplane , in cloud, public ip , deleting cluster may delete disk etc. 
+
+Databricks azure deployment has these parts
+
+1> Control Plane Actual Databricks Subscription (Databricks UI, Notebooks, Jobs, Cluster Manager, DBFS data bricks file system), Databricks can be protected under a virtual network can talk to it via Rest Client, Azure CLI , can be connected via power BI
+2> Data Plane Customer Subscription, created by customer (Azure Storage is created automatically by databricks in azure cloud, Azure SQL protected by Vnet, NSG (network security group), cluster also resides here, clsuter manager is also under vnet and cluster runs in data plane) , they also talk to external data sources 
+3> SSO Azure AD , can access databricks without going to azure portal 
+
+Don't sore the data in storage databricks created for itself, store in ADLS Gen 2 containers
+Data can be accessed from external systems in azure cloud or outside 
+
+creating clusters will also create disk resources 
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+Types of Cluster
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+single node driver executor on same machine 
+multinode will create driver and executor on different machine 
+minimum VM configuration is 14 GB memory and 4 CPU cores, Stand D3S are Vms 
+tags are user defined meta data , to identify them in reports 
+environment variables are automatically set by databricks 
+can collect cluster logs 
+init scripts, like shell scripts to install something before cluster starts 
+DBU Databricks Units , but total cost includes dbu + azure resource cost 
+1 USD as 1 DBU, its little less 
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+Designing Databricks LakeHouse
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+1> Storage Layer : Azure ADLS Gen2 Cloud Storage , compatatible with spark and delta lake , optimized for cost and performance, massive scalability,
+fine grained security model, durable and highly available, hierarchical directory structure, database is automatically encrypted by ADLS gen2, proetcts 
+against hardware failures.
+
+/sbit-metastore-root (project metdata)
+/sbit-managed-dev (all managed tables and delta tables) (medallion architecture /bronze_db, /silver_db, /gold_db),  copy from stage and prod
+/sbit-unmanaged-dev (/data_zone, /checkpoint_zone) ,  copy from stage and prod
+
+2> Databases Bronze, Silver, Gold will store the data in bronze , silver and gold directories respectively 
+
+Spark application reads raw data from data zone and saves the output directly in the bronze db directory 
+Transformation is applied and poutput is saved into bronze db directory 
+spark application writes state information in checkpoint directory 
+mount these directories in dbfs , but it doesnot have fine grained access control, access to all users in databricks 
+risk of data corruption , so write to db mounted , not to container directly 
+unity catalog use to add data governance 
+give access to bronze , silver, gold db based on user but not the underlying files 
+on top of it databricks works[ace management and cluster policies sit 
+better to decouple data landing to /data_zone , can connect to event hub automatic file creation in adls gen2 container 
+data_zone can again have internal subdirectories 
+bronze layer may have directories per data_zone subdiretcory to hold the data 
+
+
+Designing Bronze Layer : raw 
+Designing Silver Layer : error filtered and schema applied and other transformations
+Designing Gold Layer : curated as per business 
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+Set up Source Control
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+Azure Devops , GitHub
+dev.azure.com	
+create organziation, projects SBIT, repos , boards , intialize , create new branch called relase based on main branch 
+developer multiple feature under release branch
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+Prerequistes
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+1> create databricks workspace 
+2> create storage layer 
+3> setup unity catalog and metastore (needs premium workspace, path to storage container, resource id of azure databricks access container)
+4> create catalog and locations (create catalog for managed tables and define a catalog location, create a location for unmanaged tables, create a location for checkpoints)
+
+subscription > resource group > resources 
+us east cheaper region 
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+Configure Storage Layer 
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+1> Create Storage Account 
+
+storage accounts > create > add subscription, resource group, region, unique name, standard, LRS/GRS , advanced enable hierarchical name space
+create container sbit-metatstore-root 
+create another container sbit-managed-dev 
+create another container sbit-unmanaged-dev
+
+2> Create access connector for azure databricks 
+
+choose subsription, resource group, name , region , copy the resource id 
+go back to storage account , access control iam, add, add role assignment , select storage blob data contributor role > next , select members username >
+review and assign 
+
+3> Create Unity Catalog Metatsore 
+
+databricks workspace > username click > manage account > data tab , create metastore > name > same region where workspace and containers are created > 
+paste sbit-metatsore-root@sbitsa.dfs.core.windows.net/sbit-meta , paste the connector id in the text box , create , now can choose both the dev and qa databricks workspaces 
+user management >  add group > sbit-dev > add members > click on wokspace (to assign a workspace to this group) > sbit-ws workspace (dev instance) >
+permissions > choose sbit-dev group > User 
+do teh same thing for qa instance as well 
+
+4> Create Catalog and Storage Locations
+
+a> for managed bronzed, silver, gold tables
+
+In the dev databricks wokspace > catalog menu > external data > external locations > create location > give name to location > storage credential is the one 
+which automatically got created when we chose teh untiy catalog > abfss://sbit-managed-dev@sbitsa.dfs.core.windows.net/
+
+Now create catalog at this location 
+
+click catalog > can see hive_metastore (not linked with unity catalog /user/hive/warehouse controlled by spark.sql.warehouse.dir), main, samples, system catalog i.e databases > create catalog > give catalog name > standard > sbit-managed location > create 
+
+Note: catalog> database and schema are same thing > tables/views 
+
+Now go to permissions > grant > sbit-dev in principles > all privileges > Grant 
+
+b> for unmanaged tables like data_zone, checkpoints etc 
+
+In the dev databricks wokspace > catalog menu > external data > external locations > create location > give name to location daat_zone > storage credential is the one which automatically got created when we chose the unity catalog > abfss://sbit-unmanaged-dev@sbitsa.dfs.core.windows.net/data > create 
+
+In the dev databricks wokspace > catalog menu > external data > external locations > create location > give name to location daat_zone > storage credential is the one which automatically got created when we chose the unity catalog > abfss://sbit-unmanaged-dev@sbitsa.dfs.core.windows.net/checkpoint > create 
+
+need to grant permissions for these external locations as well.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -527,6 +527,7 @@ def check_anagaram(s1, s2):
 
 check_anagaram('I am an apple', 'apple I am ')
 
+print("-"*10)
 
 l = [1,2,3,4,5]
 " , ".join(l)

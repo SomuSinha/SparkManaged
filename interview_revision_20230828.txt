@@ -3181,3 +3181,28 @@ for x in dbutils.secrets.get('databricks-secrets-007', key="ehendpoint"):
   print(x)
 
 # can also create key versions in azure key vault
+
+
+
+
+azure cli 
+---------
+
+
+
+az login
+az group create --name resourcegroup01 --location eastus
+az group list
+
+az eventhubs namespace create --name testnamespaceCLI7 --resource-group resourcegroup01 -l eastus 
+
+az eventhubs eventhub create --resource-group resourcegroup01 --namespace-name testnamespaceCLI7 --name testeventhub7 --partition-count 4 --retention-time 2 --cleanup-policy Delete
+
+az eventhubs eventhub consumer-group  create --consumer-group-name test-consumer --eventhub-name testeventhub7 --namespace-name testnamespaceCLI7 --resource-group resourcegroup01
+
+az eventhubs eventhub list --resource-group resourcegroup01 --namespace-name testnamespaceCLI7
+
+az eventhubs eventhub delete --resource-group resourcegroup01 --namespace-name testnamespaceCLI7 --event-hub-name testeventhub7  
+
+az group delete --name resourcegroup01
+

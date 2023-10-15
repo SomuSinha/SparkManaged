@@ -4087,8 +4087,20 @@ Hit Save button
 29> can see jobs marked with green as they are completed 
 30> can see all codes deployed to qa databricks workspace , in workflow tab , can see 1 test job , go to job runs and can see test job status 
 
+------------
+requirements
+-------------
 
+%pip install -r /dbfs/requirements.txt
 
+or 
+
+dbutils.library.installPyPI("torch")
+dbutils.library.installPyPI("scikit-learn", version="1.19.1")
+dbutils.library.installPyPI("azureml-sdk", extras="databricks")
+dbutils.library.restartPython()  # Removes Python state, but some libraries might not work without calling this function
+
+%run /path/to/notebook_install_lib
 
 
 

@@ -3406,7 +3406,7 @@ do teh same thing for qa instance as well
 
 4> Create Catalog and Storage Locations
 
-a> for managed bronzed, silver, gold tables
+a> for managed bronze, silver, gold tables
 
 In the dev databricks wokspace > catalog menu > external data > external locations > create location > give name to location > storage credential is the one 
 which automatically got created when we chose teh untiy catalog > abfss://sbit-managed-dev@sbitsa.dfs.core.windows.net/
@@ -3429,6 +3429,663 @@ need to grant permissions for these external locations as well.
 
 
 
+----------------------------------------------------------------------------------------------------------------------------------------
+Start Coding
+----------------------------------------------------------------------------------------------------------------------------------------
+
+
+Workflow > Repos > create Folder >  create repo > fill infromation about source control > clone in repo > copy https url > generate Git cerdentials in 
+azure devops > may clone part of repo using advanced
+
+Somebody should create release branch first > create feature branch based on release branch > hit pull button 
+
+Add Notebook to SBIt repository > Change notebook name 
+
+---------
+README.md
+---------
+
+------------
+config.ipynb
+------------
+
+class Config():
+  def __init__(self):
+    self.base_dir_data = spark.sql("describe external location `data_zone`").select("url").collect()[0][0]
+	self.base_dir_checkpoint = spark.sql("describe external location `checkpoint`").select("url").collect()[0][0]
+	self.db_name = "sbit_db"
+	self.maxFilesPerTrigger = 1000
+
+
+-----------
+setup.ipynb
+-----------
+
+# may have __ or _ at start to denote the file is private or protected 
+
+% run ./config 
+
+
+class Setuphelper():
+   def __init__(self, env):
+      Conf =  Config()
+	  self.landing_zone = Conf.base_dir_data + "/raw"
+	  self.checkpoint_base = Conf.base_dir_checkpoint + "/checkpoints"
+	  self.catalog =  env 
+	  self.db_name = Conf.db_name 
+	  self.initialized = False 
+	  
+   def create_db(self):
+      spark.catalog.clearCache()
+	  spark.sql("Cretata database if not exists {self.catalog}.{self.db_name}")
+	  spark.sql("Use catalog {self.catalog}.{self.db_name}")
+	  self.initialized = True
+	  print("done")
+	  
+	  
+   def create_reg_usr(self):
+	   if self.initialized:
+		  print()
+		  spark.sql(f"""CREATE TABLE if not exists {self.catalog}.{self.db_name}.registered_users_bz(
+		  user_id long, 
+		  device_id long 
+		  partitioned by (topic, week_part)
+		  )""")
+	   else:
+	     raise ReferenceError("Database is not defined. cannot create table in default database")
+		 
+		 
+	def setup(self):
+	    import time 
+		start =  int(time.time())
+		print("starting setup")
+		self.create_db()
+		self.create_reg_usr()
+		print("setup completed in {int(time-time() - start)} seconds")
+		
+	# create a staticsmethod or classmethod for time mesasurement or may push to Utils , may create a common Utils packahe with 
+	Utilities module and use it for import 
+		 
+	# one function per table 
+	
+   def assert_table(self, table_name):
+     assert spark.sql("SHOW tables in {self.catalog}.{self.db_name}).filter("fisTemporary=False and tableName='{table_name}'").count()==1 , "
+	 The table {self.table_name} in {self.catalog}.{self.db_name} is missing"
+	 
+	def validate(self):
+       import time 
+       start =  int(time.time())
+       self.assert_table("")
+       self.assert_table("")
+
+    def cleanup(self):
+       dbutils.fs.rm(self.landing_zone, True)	
+	  
+# To commit right click > git > give commit message > commit and push 
+
+1> clone the project from source control 
+2> create feature branch 
+3> write code, unit test and commit 
+4> raise a pull request to merge feature branch with release and qa team will raise merge request to merge release branch , CICD pipeline is 
+started to merge the code to qa 
+
+----------------
+scratchpad.ipynb
+----------------
+
+%run /Repos/SBIT/SBIT/setup
+SH =  SetupHelper("dev")
+SH.cleanup()
+SH.setup()
+SH.validate()
+
+--------------------
+history-loader.ipynb
+--------------------
+
+%run config
+
+class HistoryLoader():
+    def __init__(self, env):
+      Conf =  Config()
+	  self.landing_zone = Conf.base_dir_data + "/raw"
+	  self.test_data_dir = Conf.base_dir_checkpoint + "/test_data"
+	  self.catalog =  env 
+	  self.db_name = Conf.db_name 
+    
+	def load_data_lookup(self):
+	    spark.sql(f"""
+		INSERT overwrite into {self.catalog}.{self.db_name}.date_lookup 
+		select date, week, month, dayofweek 
+		from json.`{self.test_data_dir}/lookup.json/`
+		""")
+		
+	def load_history(self):
+	   import time 
+	   self.load_data_lookup()
+	   # calculate time 
+	   
+	def assert_count(self, table_name, expected_count);
+	   actual_count = spark.read.table(f"{self.catalog}.{self.db_name}.{self.table_name}").count()
+	   assert actual_count = expected_count , f"Expected count {self.expected_count}, {actual_count} in {table_name}"
+	   
+	def validate(self):
+	   import time 
+	   start = int(time.time())
+	   self.assert_count(f"date_lookup", 365)
+	   print("")
+	   
+-------------
+bronze.ipynb 
+-------------
+
+Batch Processing Approach 
+Stream Processing Approach 
+
+1> Support batch run at regular intervals
+2> Supports continous streaming run 
+3> Auomatic checkpointing 
+4> Automatic retstart
+
+%run ./config
+
+
+class Bronze():
+   def __init__(self, env):
+      Conf =  Config()
+	  self.landing_zone = Conf.base_dir_data + "/raw"
+	  self.checkpoint_base = Conf.base_dir_checkpoint + "/checkpoints"
+	  self.catalog =  env 
+	  self.db_name = Conf.db_name 
+	  spark.sql("USE {self.catalog}.{self.db_name}") 
+	  
+   def consumer_user_registration(self):
+      schema = ""
+	  df_stream = spark.readStream.format("cloudFiles")
+  
+	  if once == True:
+	     return stream_writer.trigger(availableNow=True).toTable(f"{self.catalog}.{self.db_name}.registered_users_bz")
+	  else:
+	     return stream_writer.trigger(processingTime=processing_time).toTable(f"{self.catalog}.{self.db_name}.registered_users_bz")
+	  
+	  
+	def kafka_multiplex(self):
+	
+	
+	def consume(self):
+	  self.consumer_user_registration()
+	  self.kafka_multiplex()
+	  
+	  
+	def assert_count(self, table_name, expected_count);
+	   actual_count = spark.read.table(f"{self.catalog}.{self.db_name}.{self.table_name}").count()
+	   assert actual_count = expected_count , f"Expected count {self.expected_count}, {actual_count} in {table_name}"
+	   
+	def validate(self):
+	   import time 
+	   start = int(time.time())
+	   self.assert_count(f"date_lookup", 365)
+	   print("")
+	  
+
+# This catalog already is connected to managed-dev container 
+
+
+
+------------
+silver.ipynb 
+------------
+
+
+%run ./config
+
+
+class Upserter:
+  def __init__(self, merge_query, temp_view_name):
+	  self.merge_query = merge_query
+	  self.temp_view_name = temp_view_name 
+	  
+	  
+  def upsert(self, df_micro_batch, batch_id):
+      df_micro_batch.createOrReplaceTempView(self.temp_view_name)
+	  df_micro_batch._jdf.sparkSession().sql(self.merge_query)
+	  
+	  
+class CDCUpserter:
+  def __init__(self, merge_query, temp_view_name):
+	  self.merge_query = merge_query
+	  self.temp_view_name = temp_view_name 
+	  self.id_column = id_column
+	  self.sort_by = sort_by 
+	  
+	  
+  def upsert(self, df_micro_batch, batch_id):
+      # window partition logic
+      df_micro_batch.createOrReplaceTempView(self.temp_view_name)
+	  df_micro_batch._jdf.sparkSession().sql(self.merge_query)
+
+
+class Silver():
+   def __init__(self, env):
+      Conf =  Config()
+	  self.checkpoint_base = Conf.base_dir_checkpoint + "/checkpoints"
+	  self.catalog =  env 
+	  self.db_name = Conf.db_name 
+	  spark.sql("USE {self.catalog}.{self.db_name}") 
+	  
+   def upsert_users(self):
+      # upsert query 
+	  
+   # one function per table 
+   
+   def upsert():
+    # call all 8 functions 
+	  
+	   
+   def assert_count(self, table_name, expected_count);
+	   self.assert_count("users", 5 if sets==1 else 10)
+	   
+   def validate(self):
+	   import time 
+	   start = int(time.time())
+	   self.assert_count(f"date_lookup", 365)
+	   print("")
+	   
+# Read new data from bronze table 
+# Remove duplicates
+# Transform the raw data 
+# Merge the transformed data into the silver table 
+
+
+data_upserter = Upserter(query, "users_delta")
+df_delta.writeStream.foreachBatch(data_upserter.upsert).outputMode("update").option("checkpointLocation", f"{self.checkpoint_base}/users")
+.queryName("users_upsert_stream")
+
+
+# for multiple records updating one record, rank based on time_stamp, and apply the latest update 
+
+----------
+gold.ipynb
+----------
+
+%run ./config
+
+
+class Upserter:
+  def __init__(self, merge_query, temp_view_name):
+	  self.merge_query = merge_query
+	  self.temp_view_name = temp_view_name 
+	  
+	  
+  def upsert(self, df_micro_batch, batch_id):
+      df_micro_batch.createOrReplaceTempView(self.temp_view_name)
+	  df_micro_batch._jdf.sparkSession().sql(self.merge_query)
+	  
+	  
+class CDCUpserter:
+  def __init__(self, merge_query, temp_view_name):
+	  self.merge_query = merge_query
+	  self.temp_view_name = temp_view_name 
+	  self.id_column = id_column
+	  self.sort_by = sort_by 
+	  
+	  
+  def upsert(self, df_micro_batch, batch_id):
+      # window partition logic
+      df_micro_batch.createOrReplaceTempView(self.temp_view_name)
+	  df_micro_batch._jdf.sparkSession().sql(self.merge_query)
+
+
+class Gold():
+   def __init__(self, env):
+      Conf =  Config()
+	  self.test_data_dir = Conf.base_dir_checkpoint + "/test_data "
+	  self.checkpoint_base = Conf.base_dir_checkpoint + "/checkpoints"
+	  self.catalog =  env 
+	  self.db_name = Conf.db_name 
+	  spark.sql("USE {self.catalog}.{self.db_name}") 
+	  
+   def upsert_users(self):
+      # upsert query 
+	  
+   # one function per table 
+   
+   def upsert():
+    # call all 8 functions 
+	  
+	   
+   def assert_count(self, table_name, expected_count);
+	   self.assert_count("users", 5 if sets==1 else 10)
+	   
+   def assert_rows(self, location, table_name, sets):
+	  expected_rows = spark.read.format("parquet").load("{self.test_data_dir}/location.parquet").collect()
+	  actual_rows = spark.table(table_name).collect()
+	  assert expected_rows = actual_rows, "Expected data mismatches with actual data in {table_name	}"
+	   
+   def validate(self):
+	   import time 
+	   start = int(time.time())
+	   self.assert_count(f"date_lookup", 365)
+	   print("")
+	   
+------------	   
+run.ipynb
+------------
+
+# environment 
+# run type 
+# processing time 
+
+dbutils.wdigets.text("Environment", "dev", "set the current environment/catalog/name")
+dbutils.wdigets.text("RunType", "once", "Set once to run as a batch")
+dbutils.wdigets.text("ProcessingTime", "5 seconds", "Set the microbatch interval")
+
+env = dbutils.widgets.get("Environment")
+once = dbutils.widgets.get("RunType")=="once" else False
+processing_time = dbutils.widgets.get("ProcessingTime")
+if once:
+ print("staring in batch mode")
+else:
+ print("starting in stream mode {processing time} microbatch.")
+ 
+ 
+spark.conf.set("spark.sql.shuffle.partitions", sc.defaultParallelism) # = number of executor cores 
+spark.conf.set("spark.databricks.delta.optimizewrite.enabled", True) 
+spark.conf.set("spark.databricks.delta.autocompact.enabled", True)
+spark.conf.set("spark.sql.streaming.stateStore.providerClass", "com.databricks.sql.streaming.state.
+RocksDBStateStoreProvider")
+
+
+%run ./setup 
+
+%run ./history 
+
+SH = SetupHelper(env)
+HL = HistoryLoader(env)
+
+
+
+setup_required = spark.sql(f"SHOW DATABASES IN (SH.catalog}").filter(f"databaseName == '{SH.db_name}").count() != 1 
+if setup_required:
+	SH.setup()
+	SH.validate()
+    HL.load_history()
+	HL.validate()
+else:
+	spark.sql(f"USE (SH.catalog). {SH.db_name}")]
+	
+	
+%run bronze 
+
+%run silver 
+
+%run gold 
+
+BZ = Bronze(env)
+SL = Silver(env)
+GL = Gold(env)
+
+BZ.consume(once, processing_time)
+SL.upsert(once, processing_time)
+GL.upsert(once, processing_time)
+
+
+# create workflow, divide task as necessary 
+
+---------------------
+Integration Testing
+---------------------
+
+create test data and expected results 
+
+First then incremental 
+
+Producer 
+
+class Producer():
+  def __init__(self):
+    self.config = Config()
+	self.landing_zone = self.Conf.base_dir_data + "/raw"
+	self.test_data_dir = self.Conf.base_dir_data + "/test_data"
+	
+  def user_registration(self, set_num):
+    source = 
+	target = 
+	dbutils.fs.cp(source, target)
+	
+  def profile_cdc(self, set_num):
+    source = 
+	target = 
+	dbutils.fs.cp(source, target)
+
+  def produce(self, set_num);
+    # call all producers 
+	
+  def _validate_count():
+  
+  def validate():
+    self._validate_count()
+	
+	
+-------------------------
+batch-test
+-------------------------
+
+
+dbutils.widgets.text("Environment", "dev", "Set the current environment/catalog name")
+env = dbutils.widgets.get("Environment")
+
+
+%run ./setup
+
+
+SH = SetupHelper (env)
+SH.cleanup
+
+
+dbutils.notebook.run("./run", 688, {"Environment": env, "RunType": "once"})
+
+
+%run ./history-loader
+
+
+HL = HistoryLoader (env)
+SH.validate()
+HL.validate
+
+
+%%run ./producer
+PR =Producer() 
+PR.produce(1)
+PR.validate(1)
+dbutils.notebook.run("./97-run", 688, {"Environment": env, "RunType": "once"})
+
+%run bronze 
+%run silver 
+%run gold 
+
+
+BZ = Bronze (env) 
+SL = Silver (env) 
+GL = Gold (env) 
+BZ.validate(1)
+SL.validate(1)
+GL.validate(1)
+
+
+
+PR.produce(2)
+PR.validate(2)
+dbutils.notebook.run("./87-run", 600, {"Environment": env, "RunType": "once"})
+BZ.validate(2)
+SL.validate(2)
+GL.validate(2)
+SH.cleanup()
+
+
+-----------
+stream-test 
+-----------
+
+Stream mode testing
+Initial Setup
+
+1. Cleanup
+2. Create and trigger a Job to execute Run Notebook 
+3. Validate History load
+
+Batch 1
+
+4. Produce Payload 1 to the landing zone 
+5. Validate output for Payload 1
+
+Batch 2
+
+6. Produce Payload 2 to the landing zone 
+7. Validate output for Payload 2
+
+
+
+
+dbutils.widgets.text("Environment", "dev", "Set the current Environment/catalog name") 
+dbutils.widgets.text("Host", "Databricks Workspace URL")
+dbutils.widgets.text("AccessToken", "", "Secure Access Token")
+
+
+env = dbutils.widgets.get("Environment")
+host = dbutils.widgets.get("Host")
+token = dbutils.widgets.get("AccessToken")
+
+
+%run ./setup
+
+
+SH = SetupHelper(env)
+SH.cleanup()
+
+# Cluster JSON configuration
+
+# Rest API Creating a streaming job
+
+
+https://docs.databricks.com/api/azure/workspace/introduction
+
+-------------
+CICD Pipeline 
+-------------
+
+CI :- Build 
+CD :- Release
+
+Project Development and CI/CD Pipeline:
+
+Project development completed
+Implementation of automated CI/CD (Continuous Integration/Continuous Deployment) pipeline
+Collaboration with DevOps experts for CI/CD implementation
+Effort to understand essential aspects of CI/CD
+Initial overview of the CI/CD pipeline and its components
+CI/CD Pipeline Overview:
+
+CI (Continuous Integration) and CD (Continuous Deployment)
+
+Distinction between build and release pipelines
+Use of Azure DevOps for pipeline implementation
+Connecting Databricks with code repositories (e.g., Azure Git Repos)
+Flexibility in selecting different Git repositories (Git Enterprise, Bitbucket, AWS CodeCommit)
+
+
+Code Repository and Branches:
+
+The presence of main, release, dev, and feature branches in the code repository
+Committing code to feature branches
+Automatic notification to the Azure DevOps build pipeline
+Initiation of the build pipeline, which involves the use of an agent (Ubuntu virtual machine)
+
+
+Build Pipeline Steps:
+
+Building agent machine
+Execution of build pipeline code
+Actions performed by the pipeline, such as installing Python, PyTest, and Databricks Connector
+Main goal: Checking out the latest code from the Git repository
+Connecting to Databricks environment and executing unit tests
+Running unit tests locally on the agent or remotely using Databricks Connector
+Preparing deployable artifacts, including notebooks and Python wheels
+The significance of the build pipeline: Integration, testing, and artifact preparation
+
+CI Pipeline Summary:
+
+Build pipeline runs on all branches (feature, dev, release, main)
+Objectives: Integrate code, run unit tests, reject or accept code based on test results, prepare artifacts
+
+Release Pipeline (CD):
+
+Distinct from the build pipeline
+Limited to running on release and main branches
+Triggered manually, with the option for automation
+Workflow: Merging feature branches into the dev branch, creating a pull request, and notifying the build pipeline
+Manual triggering for control and approval process
+Execution of the release pipeline: Creating an agent machine, extracting the latest artifact, and deploying it to the target environment
+Deployment tasks: Copying notebooks, installing Python wheels, and handling dependencies
+Optional integration testing in the release pipeline
+
+
+Overall Understanding:
+
+Insight into the CI/CD approach for Databricks and Spark Projects
+Upcoming topic: Creating both pipelines step by step for a detailed understanding of the process.
+
+
+Build Pipeline 
+
+1> Login to Azure Devops , Go to Project , Go to repos 
+2> Create new feature branch based on release branch 
+3> create a new file azure_build_pipeline.yaml # copy yaml file 
+4> merge this file to the release branch 
+5> click on pipelines, create pipeline, choose azure repos, select project, choose existing azure pipeline yaml file 
+6> select release branch , select yaml file in path 
+7> click on continue 
+8> click down arrow button , save 
+9> when we commit to release branch or create a pull request to release branch , It will automatically run 
+
+Release Pipeline 
+
+1> Login to Azure Devops , Go to Project
+2> Pipelines > Releases 
+3> Hit New Pipeline 
+4> Click on Empty Job > + Add in Artifacts 
+5> Choose Project Name, SBIT in build pipeline > Add
+6> Stage 1 > click on 0 task > Agent Job > Agent Pool as Azure Pipelines > agent specifcation as ubuntu-22.04 > Save (versions depend on what databricks is using )
+7> Left Side Agent Job, click + button to add tasks , search use python version , use python 3.X > change display name to Use Python 3.10 and version spec to 3.10
+8> Hit Save Button at top 
+9> click + button again in agent job , search extract file task and add it . click on extract files task 
+10> archive files pattern **/*.zip , destination folder ${Release.PrimaryArtifactSourceAlias}/Databricks 
+11> check clean destination folder before extracting , hit save button 
+12> click + button again and search for bash , add bash task , click on bash script 
+13> change display name to Install Databricks CLI , choose Inline Radio button , script pip install databricks-cli  > Save 
+14> click on + button again to add a bash task and click on bash script to modify the properties 
+15> change display name to deploy notebook , choose inline radio button , in script write 
+
+databricks workspace import_dir --overwrite
+$(System.ArtifactsDirectory)/$(Release.PrimaryArtifactSourceAlias)/Databricks//Shared/
+
+Hit Save button 
+16> Click + button once again , search for bash and add , click bash task, change display name to Run Integration test for Batch Job 
+17> Inline > paste bash script to run the integration test and click on save 
+18> change the name of the pipeline SBIT Deploy Pipeline 
+19> Go to sbit-qa databricks workspace , copy the workspace url till .net 
+20> click on email on top right and user settings menu > developer > access tokens > generate new token , for devops pipeline as comment 
+21> click workspace menu in databricks , check the shared folder 
+22> back to azure portal, click variables > add > DATABRICKS_HOST paste workspace url, DATABRICKS_TOKEN past access token , hit save button 
+23> Release pipeline is manual , It will deploy project to QA environment 
+24> Go to repos , choose the feature branch where we are devloping project > pull requests > new pull requests 
+<feature branch> into <release branch> at top , Give title as initial release , hit create button , complete to complete the merge 
+25> Go to pipeline and click on pipelines , a build would have run automatically with green tick , click on it and we can see the pr details 
+26> click again and we can see the job status , click job and can see list of tasks , click the task to see the logs 
+27> click the releases , create release button hit , create button 
+28> can see stage1 running > go to deployments tab > can see stage 1 running > click on stage1 to see the running jobs 
+29> can see jobs marked with green as they are completed 
+30> can see all codes deployed to qa databricks workspace , in workflow tab , can see 1 test job , go to job runs and can see test job status 
 
 
 

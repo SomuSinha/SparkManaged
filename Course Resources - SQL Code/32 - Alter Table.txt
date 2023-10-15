@@ -1,0 +1,37 @@
+/*
+Links and Resources:
+ALTER TABLE: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-syntax-ddl-alter-table
+
+Syntax:
+
+ALTER TABLE table_name
+   { RENAME TO clause |
+     ADD COLUMN clause |
+     ALTER COLUMN clause |
+     DROP COLUMN clause |
+     RENAME COLUMN clause |
+     ADD CONSTRAINT clause |
+     DROP CONSTRAINT clause |
+     ADD PARTITION clause |
+     DROP PARTITION clause |
+     RENAME PARTITION clause |
+     RECOVER PARTITIONS clause |
+     SET TBLPROPERTIES clause |
+     UNSET TBLPROPERTIES clause |
+     SET SERDE clause |
+     SET LOCATION clause |
+     SET OWNER TO clause }
+  
+*/
+
+-- This table was created in the previous lecture
+SELECT * FROM course_project.default.truncate_demo;
+
+-- Altering the Table name
+ALTER TABLE truncate_demo RENAME TO station_data_temp
+
+-- Adding a new column
+ALTER TABLE station_data_temp ADD COLUMN new_col STRING
+
+-- Dropping a column
+ALTER TABLE station_data_temp DROP COLUMN new_col

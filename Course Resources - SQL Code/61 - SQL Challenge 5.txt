@@ -1,0 +1,35 @@
+/*
+SQL CHALLENGE
+
+I’d like you to return a query that shows the most popular combination of start 
+and end stations in terms of the total number of journeys across the dataset.
+
+The start and end stations should be in the format:
+'start_station_name TO end_station_name'
+e.g. 'Van Vorst Park TO Jersey & 3rd'
+
+Use the jc_bike_data_22 and station_data tables.
+
+Hint 1: Consider using the concat function and join operations
+Hint 2: Consider using subqueries
+*/
+
+select
+count(ride_id) as total_rides,
+concat(start_station, ' TO ', end_station) as start_end_station
+from
+(select 
+t1.ride_id,
+t2.station_name as start_station,
+t3.station_name as end_station
+from jc_bike_data_22 as t1
+left join station_data as t2
+on t1.start_station_id = t2.station_id
+left join station_data as t3
+on t1.end_station_id = t3.station_id)
+group by concat(start_station, ' TO ', end_station)
+order by total_rides desc;
+
+
+
+

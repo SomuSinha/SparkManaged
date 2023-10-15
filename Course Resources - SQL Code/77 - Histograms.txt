@@ -1,0 +1,17 @@
+/*
+Histogram: https://learn.microsoft.com/en-us/azure/databricks/visualizations/visualization-types#histogram
+
+A histogram is a graph used to represent the frequency distribution of data points of a single measure. 
+Histograms classify data into various “bins” and count how many data points belong to each of those bins.
+
+Advantages: The histogram organizes large amounts of data, and produces a visualization quickly, using a single measure.
+
+Disadvantages: It is not relevant for detailed analysis of the data as it deals with a summary of the data distribution.
+*/
+
+-- use the query result to create the chart
+select 
+ride_id,
+datediff(minute, started_at, ended_at) as trip_duration_mins
+from course_project.citibike.jc_bike_data_22
+where datediff(minute, started_at, ended_at) between 0 and 60;

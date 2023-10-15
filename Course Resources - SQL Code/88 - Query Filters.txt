@@ -1,0 +1,14 @@
+/*
+Query Filters: https://learn.microsoft.com/en-us/azure/databricks/sql/user/queries/query-filters
+A query filter lets you interactively reduce the amount of data shown in a visualization. 
+A query filter limits data after the query has been executed. 
+*/
+
+select 
+ride_id,
+member_casual,
+rideable_type,
+started_at,
+datediff(minute, started_at, ended_at) as trip_duration_mins
+from course_project.citibike.jc_bike_data_22
+;

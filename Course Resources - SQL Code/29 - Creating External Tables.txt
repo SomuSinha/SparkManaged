@@ -1,0 +1,32 @@
+/*
+Links and Resources:
+Creating Tables: https://learn.microsoft.com/en-us/azure/databricks/data-governance/unity-catalog/create-tables#--managed-tables
+
+Syntax:
+
+CREATE [EXTERNAL] TABLE
+table_name
+table_specification
+USING data_source
+LOCATION path
+OPTIONS clause;
+
+*/
+
+--creating a new schema in the course_project catalog
+create schema course_project.citibike_ext;
+
+-- creating an external table USING a parquet data file
+create table
+course_project.citibike_ext.station_data_pq
+(station_id STRING, station_name STRING)
+USING parquet
+LOCATION 'abfss://citibike-ext@extstorage639.dfs.core.windows.net/station_data.snappy.parquet'; --please update the LOCATION path for your specific location
+
+-- creating an external table USING a csv data file and specifying the header option as True (please replace the LOCATION with your own)
+create table
+station_data_csv
+(station_id STRING, station_name STRING)
+USING csv
+LOCATION 'abfss://citibike-ext@extstorage639.dfs.core.windows.net/station_data.csv' --please update the LOCATION path for your specific location
+OPTIONS (header=True);

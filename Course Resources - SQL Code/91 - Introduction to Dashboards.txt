@@ -1,0 +1,27 @@
+/*
+Databricks SQL Dashboards: https://learn.microsoft.com/en-us/azure/databricks/sql/user/dashboards/
+*/
+
+
+-- KPIs - Total Rides and Trip Duration
+select
+count(*) as `Total Rides`,
+sum(trip_duration_mins) as `Total Trip Duration`,
+mean(trip_duration_mins) as `Average Trip Duration`
+from course_project.citibike.vw_jc_bike_data_22;
+
+
+-- Combo Chart - Total Rides and Average Trip Duration (Monthly)
+select
+*
+from course_project.citibike.vw_jc_bike_data_22;
+
+
+-- Most Common Journeys
+select
+concat(start_station_name, ' --> ', end_station_name) as `Start and End Journey`,
+count(trip_duration_mins) as `Number of Trips`
+from course_project.citibike.vw_jc_bike_data_22
+group by 1 -- grouping by index number of column
+order by 2 desc -- ordering by index number of column
+;

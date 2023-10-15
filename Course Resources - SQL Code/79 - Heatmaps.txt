@@ -1,0 +1,24 @@
+/*
+Heatmap: https://learn.microsoft.com/en-us/azure/databricks/visualizations/heatmap
+The heatmap visualization allows you to visualize numerical data using colors. 
+
+Heatmaps require two dimensions and one measure.
+
+Advantage: Heatmaps provide an efficient and visually intuitive way to identify patterns and relationships in large datasets, aiding quick data exploration and comprehension.
+
+Disadvantage: Heatmaps can be susceptible to misinterpretation if color choices, scaling, or data normalization are not carefully considered, leading to potential inaccuracies in the analysis.
+*/
+
+-- use the query result to create the chart
+select 
+t1.ride_id,
+t2.station_name as start_station,
+t3.station_name as end_station
+from 
+course_project.citibike.jc_bike_data_22 as t1
+inner join course_project.citibike.station_data as t2
+on t1.start_station_id = t2.station_id
+inner join course_project.citibike.station_data as t3
+on t1.end_station_id = t3.station_id;
+
+

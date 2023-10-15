@@ -1,0 +1,25 @@
+/*
+Box Plot: https://learn.microsoft.com/en-us/azure/databricks/visualizations/visualization-types#box
+
+A box plot is a visual summary of the distribution of a dataset, showing the median, quartiles, and potential outliers.
+
+Advantages: The box plot organizes large amounts of data, and visualizes outlier values.
+
+Disadvantages: The box plot is not relevant for detailed analysis of the data as it deals with a summary of the data distribution.
+
+First Quartile (Q1): The first quartile (Q1) is the value below which 25% of the data falls
+Median (Q2): The Median is the middle value that separates the lower 50% from the upper 50% of the data
+Upper Quartile (Q3): The third quartile (Q3) is the value below which 75% of the data falls.
+Upper Fence: Boundary beyond which data points are considered potential outliers. It is calculated as Q3 (the third quartile) plus 1.5 times the interquartile range (IQR). 
+Any data points that fall above the upper fence are shown as individual points outside the whisker of the box plot and are considered potential outliers.
+*/
+
+-- use the query result to create the chart
+select 
+ride_id,
+member_casual,
+rideable_type,
+datediff(minute, started_at, ended_at) as trip_duration_mins
+from course_project.citibike.jc_bike_data_22
+where to_date(started_at) = '2022-12-01';
+

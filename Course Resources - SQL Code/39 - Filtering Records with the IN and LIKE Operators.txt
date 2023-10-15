@@ -1,0 +1,28 @@
+/*
+IN predicate:
+https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/functions/in
+
+SELECT column1, column2, ...
+FROM table_name
+WHERE column_name IN (value1, value2, ...);
+
+LIKE predicate: 
+https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/functions/like
+
+SELECT column1, column2, ...
+FROM table_name
+WHERE column_name LIKE pattern;
+
+% represents zero, one, or multiple characters
+_ matches any one character in the input
+*/
+
+-- searching for values that are inside of the parenthesis
+select * from jc_bike_data_22 where station_station_id IN ('JC023','JC109','JC093');
+
+--searching for input values with 'St' inside the string
+select * from station_data where station_name like '%St%';
+
+-- searching for any pattern with 8 characters in the input
+select * from station_data where station_name like '________';
+

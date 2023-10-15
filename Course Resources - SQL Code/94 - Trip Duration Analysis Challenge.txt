@@ -1,0 +1,25 @@
+/*
+The code below has been used to populate the visuals for my solution as part of the Trip Duration Analysis Challenge
+*/
+
+-- Charts - Trip Length
+
+select
+case
+  when trip_duration_mins < 10 then 'Short'
+  when trip_duration_mins < 20 then 'Medium'
+  else 'Long'
+end as `Trip Length`,
+rideable_type as `Bike Type`,
+member_casual as `Rider Type`,
+started_at as `Date`
+from course_project.citibike.vw_jc_bike_data_22
+where started_at between '{{ Start Date Range }}' and '{{ End Date Range }}'; -- please ensure the parameter is a Date type
+
+-- KPIs - Rides and Trip Duration
+select
+count(*) as `Number of Rides`,
+mean(trip_duration_mins) as `Average Trip Length`
+from course_project.citibike.vw_jc_bike_data_22
+where started_at between '{{ Start Date Range }}' and '{{ End Date Range }}'; -- please ensure the parameter is a Date type
+

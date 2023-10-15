@@ -1,0 +1,27 @@
+-- Code for charts: 
+-- Combo Chart: Total Rides and Average Trip Duration (Monthly)
+-- Pivot Table: Standard Deviation of Trip Duration (Monthly)
+select 
+ride_id,
+member_casual,
+rideable_type,
+started_at,
+datediff(minute, started_at, ended_at) as trip_duration_mins
+from course_project.citibike.jc_bike_data_22;
+
+
+-- Code used to investigate casual riders and docked bikes
+select
+start_end_stations,
+count(*) as total_rides,
+sum(trip_duration_mins) as total_ride_duration,
+mean(trip_duration_mins) as avg_ride_duration
+from
+(
+select 
+concat(start_station_id, ' to ', end_station_id) as start_end_stations, 
+datediff(minute, started_at, ended_at) as trip_duration_mins
+from course_project.citibike.jc_bike_data_22
+where member_casual = 'casual' and rideable_type = 'docked_bike'
+)
+group by start_end_stations;

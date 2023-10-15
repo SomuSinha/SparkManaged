@@ -1,0 +1,15 @@
+/*
+Query Parameters: https://learn.microsoft.com/en-us/azure/databricks/sql/user/queries/query-parameters
+A query parameter lets you substitute values into a query at runtime.
+Unlike a filter, which takes effect after the query has been executed.
+*/
+
+select 
+ride_id,
+member_casual,
+rideable_type,
+started_at,
+datediff(minute, started_at, ended_at) as trip_duration_mins
+from course_project.citibike.jc_bike_data_22
+where rideable_type = {{ Choose Rideable Type }}
+;

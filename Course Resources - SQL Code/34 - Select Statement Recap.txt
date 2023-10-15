@@ -1,0 +1,21 @@
+/*
+The SELECT statement is used to select data from tables or views.
+*/
+
+-- selecting all columns from the jc_bike_data_22 table
+select * from course_project.citibike.jc_bike_data_22;
+
+-- aliasing column names (the AS keyword is optional)
+select ride_id, start_lat as start_latitude, start_lng as start_longitude from jc_bike_data_22;
+
+-- aliasing column names without the AS keyword
+select ride_id, start_lat start_latitude, start_lng start_longitude from jc_bike_data_22;
+
+-- use backticks to specify column aliases with whitespace characters
+select ride_id as `Ride ID`, start_lat as `Start Latitude`, start_lng as `Start Longitude` from jc_bike_data_22;
+
+-- aliasing Table names (AS keyword optional)
+select t.ride_id, t.member_casual from jc_bike_data_22 as t;
+
+-- using the alias Table name as a prefix on the star wildcard
+select t.* from jc_bike_data_22 as t;

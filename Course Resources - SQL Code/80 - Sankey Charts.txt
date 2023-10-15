@@ -1,0 +1,34 @@
+/*
+Sankey Charts:https://learn.microsoft.com/en-us/azure/databricks/visualizations/visualization-types#sankey
+Sankey charts use flow or path diagrams to represent the flow of quantities or proportions between different stages.
+
+Advantages: Show complex data relationships and proportions intuitively.
+
+Disadvantages: Potential clutter and difficulty in displaying a large number of categories.
+*/
+
+-- query 1
+select 
+rideable_type as stage2, 
+date_format(started_at, 'QQQ') as stage1, 
+date_format(started_at,'E') as stage3, 
+count(*) as value 
+from course_project.citibike.jc_bike_data_22 
+group by 1,2,3; -- grouping using index reference rather than column names
+
+-- query 2
+select 
+rideable_type as stage2, 
+member_casual as stage1, 
+date_format(started_at,'E') as stage3, 
+count(*) as value 
+from course_project.citibike.jc_bike_data_22 
+group by 1,2,3; -- grouping using index reference rather than column names
+
+
+
+
+
+
+
+

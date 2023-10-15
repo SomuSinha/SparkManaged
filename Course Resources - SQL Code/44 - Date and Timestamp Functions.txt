@@ -1,0 +1,14 @@
+/*
+Date and Timestamp Functions: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-functions-builtin#date-timestamp-and-interval-functions
+Datetime Patterns: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-datetime-pattern
+*/
+
+--using datediff
+select ride_id, started_at, ended_at, datediff(MINUTE,started_at, ended_at) as duration_mins from jc_bike_data_22;
+
+-- using date_format
+select started_at, date_format(started_at, 'MM-yy') as month_year_1, date_format(started_at,'MMM-yy') as month_year_2 from jc_bike_data_22;
+
+--using current_date and current_timestamp
+select current_date(), current_timestamp()
+

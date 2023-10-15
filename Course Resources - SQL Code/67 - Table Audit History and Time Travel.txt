@@ -1,0 +1,20 @@
+/*
+Audit History and Time Travel: https://learn.microsoft.com/en-us/azure/databricks/delta/history#--restore-a-delta-table-to-an-earlier-state
+*/
+
+--retrieving the table history for the target_table
+describe history main.default.target_table;
+
+--accessing a previous version of the table using the version number
+select * from main.default.target_table version as of 3;
+
+-- accessing a previous version of the table using the timestamp
+select * from main.default.target_table timestamp as of '2023-07-25 09:18:52.000';
+
+--restoring the table to a previous version (audit history still remains)
+restore table main.default.target_table to version as of 1;
+restore table main.default.target_table to timestamp as of 'XXXX';
+
+--you can change the default history retention period using the option below
+create table main.default.temp_table 
+OPTIONS (delta.logRetentionDuration = 'interval 60 days');

@@ -1,0 +1,42 @@
+/*
+JOINS: 
+Joins are used to combine data from two or more tables based on a related column between them. 
+Joins are essential for querying and retrieving data from multiple tables. 
+
+Syntax:
+
+SELECT column[s]
+FROM table1
+JOIN TYPE table2 
+ON table1.column = table2.column;
+
+(Should also use the 3 level namespace when required)
+*/
+
+-- using wildcard to select all columns from both tables
+select * 
+from jc_bike_data_22
+join station_data
+on jc_bike_data_22.start_station_id = station_data.station_id;
+
+-- selecting specific columns to output
+-- prefixing table names
+-- aliasing station_name to start_station_name
+select jc_bike_data_22.ride_id, station_data.station_name as start_station_name
+from jc_bike_data_22
+join station_data
+on jc_bike_data_22.start_station_id = station_data.station_id;
+
+-- aliasing table names and using the 3 level namespace
+select t1.ride_id, t2.station_name as start_station_name
+from course_project.citibike.jc_bike_data_22 as t1
+join course_project.citibike.station_data as t2
+on t1.start_station_id = t2.station_id;
+
+-- joining the same table twice so we can get the start and end station names
+select t1.ride_id, t2.station_name as start_station_name, t3.station_name as end_station_name
+from course_project.citibike.jc_bike_data_22 as t1
+join course_project.citibike.station_data as t2
+on t1.start_station_id = t2.station_id
+join course_project.citibike.station_data as t3
+on t1.end_station_id = t3.station_id;

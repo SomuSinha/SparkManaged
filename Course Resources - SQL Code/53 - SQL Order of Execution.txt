@@ -1,0 +1,34 @@
+/*
+Order of Execution - The SQL order of execution defines the order in which the clauses of a query are evaluated.
+
+SQL Query Syntax:
+
+SELECT column1, column2, ... 
+FROM table_name1 
+JOIN table_name2 ON table_name1.column = table_name2.column 
+WHERE condition 
+GROUP BY column1, column2, ... 
+HAVING aggregate_function(condition) 
+ORDER BY column1, column2, ... ASC/DESC 
+LIMIT number; 
+
+
+SQL Clause Order of Execution
+FROM
+JOIN
+WHERE
+GROUP BY
+HAVING
+SELECT
+ORDER BY
+LIMIT
+
+*/
+
+
+-- since the order by clause is executed after the select clause it can recognise the aliased table reference
+select ride_id as row_id from jc_bike_data_22 order by row_id;
+
+-- as the where clause is before after the select clause the column alias has not taken effect. So you must specify the pre-alised column reference
+select ride_id as row_id from jc_bike_data_22 where ride_id = '000020F2385FA5C1';
+

@@ -1,0 +1,24 @@
+/*
+String Functions: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-functions-builtin#string-and-binary-functions
+*/
+
+-- using the upper function
+select member_casual, upper(member_casual) from jc_bike_data_22;
+
+-- aliasing the column where the function is applied
+select member_casual, upper(member_casual) as upper_member_casual from jc_bike_data_22;
+
+-- using the lower function
+select lower(ride_id) from jc_bike_data_22;
+
+-- using the initcap function
+select initcap(member_casual) from jc_bike_data_22;
+
+-- using the length function
+select length(member_casual) from jc_bike_data_22;
+
+-- using the right and left functions
+select member_casual, right(member_casual,3), left(member_casual,3) from jc_bike_data_22;
+
+-- using the concat function
+select start_station_id, end_station_id, concat(start_station_id, '-', end_station_id) from jc_bike_data_22;

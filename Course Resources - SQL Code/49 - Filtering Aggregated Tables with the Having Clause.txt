@@ -1,0 +1,21 @@
+/*
+The HAVING clause in SQL is used in conjunction with the GROUP BY clause to filter the results of aggregate functions based on specified conditions. 
+It allows you to apply conditions to the grouped data after the GROUP BY operation has been performed.
+
+Syntax:
+SELECT non_aggregated_column(s), aggregated_column(s)
+FROM table_name
+WHERE condition --optional
+GROUP BY non_aggregated_column(s)
+HAVING condition;
+*/
+
+-- the having clause can filter aggregated tables
+select member_casual, max(trip_duration), min(trip_duration) from group_by_demo group by member_casual having member_casual='casual';
+
+
+-- the where clause is executed before the group by clause so it does not filter aggregated tables, the filter is applied pre-aggregation
+select member_casual, max(trip_duration), min(trip_duration) from group_by_demo  where member_casual='casual' group by member_casual;
+
+-- in this example since we are filtering based on an aggregated column we cannot use the where clause
+select member_casual, rideable_type, mean(trip_duration) as mean_duration from group_by_demo group by member_casual, rideable_type having mean(trip_duration)<100;

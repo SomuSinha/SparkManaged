@@ -1,0 +1,32 @@
+/*
+ORDER BY: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-syntax-qry-select-orderby
+
+The ORDER BY keyword is used to sort the result-set in ascending or descending order.
+
+SELECT column1, column2, ...
+FROM table_name
+ORDER BY column1, column2, ... [ASC|DESC]; --ORDER BY should be after the JOIN, WHERE, GROUP BY, HAVING clauses
+*/
+
+select * from jc_bike_data_22 order by start_station_id asc, started_at desc;
+
+/*
+LIMIT: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-syntax-qry-select-limit
+
+Use the LIMIT clause to select a limited number of records.
+It is often used in conjunction with the order by clause
+
+SELECT column1, column2, ...
+FROM table_name
+ORDER BY column1, column2, ... [ASC|DESC]
+LIMIT number;
+*/
+
+select * from jc_bike_data_22 order by started_at asc limit 10;
+
+
+
+
+
+
+

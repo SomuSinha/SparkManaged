@@ -1,0 +1,10 @@
+-- inserting records into the jc_bike_data_22 table
+-- please ensure you create the intermediate july 22 table with the july 22 data
+insert into course_project.citibike.jc_bike_data_22
+select * from course_project.citibike.jc_bike_data_july_22;
+
+-- create a bar chart from the results of this statement
+select * from course_project.citibike.jc_bike_data_22;
+
+-- drop the intermediate table when finished
+drop table course_project.citibike.jc_bike_data_july_22;

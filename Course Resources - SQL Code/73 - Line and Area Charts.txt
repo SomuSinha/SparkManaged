@@ -1,0 +1,19 @@
+/*
+Line Chart and Area Chart:
+Line Chart: https://learn.microsoft.com/en-us/azure/databricks/visualizations/visualization-types#line-chart
+Area Chart: https://learn.microsoft.com/en-us/azure/databricks/visualizations/visualization-types#area-chart
+
+The line and area charts are primarily suitable when you want to visualize trends and movements over time, where the dimension values are dates or timestamps.
+
+Advantages: Easy to understand and understand trends.
+
+Disadvantages: Using many lines in a line/area chart makes the chart difficult to interpret. 
+*/
+
+
+-- use the query result to create the line and area chart
+select 
+ride_id, 
+member_casual, 
+started_at
+from course_project.citibike.jc_bike_data_22;

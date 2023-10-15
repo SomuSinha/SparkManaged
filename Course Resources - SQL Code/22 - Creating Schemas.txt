@@ -1,0 +1,22 @@
+/*
+Links and Resources:
+Creating Schemas: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-syntax-ddl-create-schema
+
+Syntax:
+
+USE CATALOG <catalog>;
+CREATE { DATABASE | SCHEMA } [ IF NOT EXISTS ] <schema-name>
+    [ MANAGED LOCATION '<location-path>' ]
+    [ COMMENT <comment> ]
+    [ WITH DBPROPERTIES ( <property-key = property_value [ , ... ]> ) ];
+
+*/
+
+-- creating demo_schema_2 in demo_catalog_2, the use catalog statement is required in order to ensure the schema is created inside of the selected catalog
+USE CATALOG demo_catalog_2;
+CREATE SCHEMA IF NOT EXISTS demo_schema_2;
+
+-- use the describe and extended keyworks to get information about the demo_schema_2 in demo_catalog_2
+USE CATALOG demo_catalog_2;
+DESCRIBE SCHEMA EXTENDED demo_schema_2;
+

@@ -1,0 +1,23 @@
+/*
+Links and Resources:
+Creating Catalogs: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-syntax-ddl-create-catalog
+
+Syntax:
+
+CREATE CATALOG [ IF NOT EXISTS ] <catalog-name>
+[ MANAGED LOCATION '<location-path>' ]
+[ COMMENT <comment> ];
+
+*/
+
+-- creating demo_catalog_2
+create catalog demo_catalog_2;
+
+-- if not exists prevents a catalog already exists error message
+create catalog if not exists demo_catalog_2;
+
+-- displaying catalogs
+show catalogs;
+
+-- use the describe and extended keyworks to get information about the demo_catalog_2
+describe catalog extended demo_catalog_2;

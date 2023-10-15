@@ -1,0 +1,20 @@
+-- The counter visualization displays a single value prominently, with an option to compare them against a target value. 
+-- https://learn.microsoft.com/en-us/azure/databricks/visualizations/visualization-types#counter
+-- The counter can only count up to 64k records
+-- select * from course_project.citibike.jc_bike_data_22;
+
+select
+count(ride_id) as `Number of Rides`,
+1000000 as `Target Rides`,
+sum(trip_duration_mins) as `Total Ride Duration`,
+mean(trip_duration_mins) as `Average Ride Duration`
+from
+(
+  select ride_id, 
+  member_casual, 
+  rideable_type, 
+  datediff(minute, started_at, ended_at) as trip_duration_mins 
+  from course_project.citibike.jc_bike_data_22
+  --where member_casual = 'member' and rideable_type = 'electric_bike'
+  )
+;

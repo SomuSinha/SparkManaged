@@ -1,0 +1,25 @@
+/*
+Pie Chart: https://learn.microsoft.com/en-us/azure/databricks/visualizations/visualization-types#pie-charts
+
+The pie chart illustrates the relationships between values and the representation of a single value in relation to the whole. 
+It is suitable for situations where you have a single data series containing only positive values.
+The main purpose of a pie chart is to compare a specific sector to the overall total. 
+
+
+Advantages: The pie chart offers an immediate understanding of proportions, especially when there are few sectors used as dimensions. 
+
+Disadvantages: Comparing different sectors in a pie chart can be challenging, especially when dealing with charts containing numerous sectors.
+
+*/
+
+-- use the query result to create the chart
+select 
+ride_id, 
+member_casual,
+rideable_type,
+datediff(minute, started_at, ended_at) as trip_duration_mins 
+from course_project.citibike.jc_bike_data_22;
+
+
+
+

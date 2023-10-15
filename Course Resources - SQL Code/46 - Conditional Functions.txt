@@ -1,0 +1,43 @@
+-- creating the trip_duration table
+-- please ensure the relevant catalog and schema are selected
+create table trip_duration as select ride_id, datediff(MINUTE, started_at, ended_at) as trip_duration from jc_bike_data_22;
+
+select * from trip_duration;
+
+/*
+IF Function: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/functions/if
+
+Returns expr1 if cond is true, or expr2 otherwise.
+
+Syntax:
+if(cond, expr1, expr2)
+*/
+
+-- using the if function
+select ride_id, trip_duration, if(trip_duration>60, 'Long', 'Short/Medium') as trip_category from trip_duration;
+
+-- nested if function
+select ride_id, trip_duration, if(trip_duration>60, 'Long', if(trip_duration>30, 'Medium', 'Short')) as trip_category from trip_duration;
+
+
+
+/*
+CASE Expression:https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/functions/case
+
+The CASE Expression allows you to evaluate multiple conditions and return different values based on the results. It has two syntax forms, simple and searched.
+
+Returns resN for the first condN evaluating to true, or def if none found.
+
+Syntax:
+CASE {WHEN cond1 THEN res1} [...] [ELSE def] END
+*/
+
+-- using the case expression
+select 
+ride_id, 
+trip_duration, 
+case when trip_duration >60 then 'Long' 
+     when trip_duration >30 then 'Medium' 
+     else 'Short'
+     end as trip_category 
+from trip_duration;

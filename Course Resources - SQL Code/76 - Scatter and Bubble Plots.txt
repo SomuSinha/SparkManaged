@@ -1,0 +1,28 @@
+/*
+Scatter plots: https://learn.microsoft.com/en-us/azure/databricks/visualizations/visualization-types#scatter
+
+Scatter Plots are used to understand the relationship between two numeric variables.
+They help identify correlations, clusters, or trends in the data.
+Scatter plots require two measures (variables) that can be plotted on the X and Y axes.
+
+Bubble plots:
+Bubble Plots are an extension of scatter plots, where each data point is represented as a circle (bubble) with its 
+size indicating the value of a third variable, adding another dimension of information.
+
+In addition to two measures for X and Y axes, a third measure is required to determine the size of the bubbles.
+
+Advantages: Both plots provide clear visualization of data distribution, and easy identification of patterns and outliers.
+
+Disadvantages: Youare limited to visualizing two or three variables, may not be suitable for large datasets.
+
+*/
+
+-- use the query result to create the chart
+select 
+start_station_id,
+count(*) as number_of_rides,
+mean(datediff(minute, started_at, ended_at)) as average_trip_duration,
+sum(datediff(minute, started_at, ended_at)) as total_trip_duration
+from course_project.citibike.jc_bike_data_22
+group by start_station_id
+;

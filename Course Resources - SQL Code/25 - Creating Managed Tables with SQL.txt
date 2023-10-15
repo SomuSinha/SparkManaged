@@ -1,0 +1,38 @@
+/*
+Links and Resources:
+Creating Tables: https://learn.microsoft.com/en-us/azure/databricks/data-governance/unity-catalog/create-tables#--managed-tables
+
+Syntax:
+
+CREATE TABLE <catalog-name>.<schema-name>.<table-name>
+(
+  <column-specification>
+);
+
+CREATE TABLE <catalog-name>.<schema-name>.<table-name>
+AS
+(SELECT Expression);
+
+*/
+
+-- creating a Managed Table called TEST_1
+CREATE TABLE IF NOT EXISTS TEST_1 (COLUMN_1 INT, COLUMN_2 STRING);
+
+-- inserting a record into TEST_1
+INSERT INTO TEST_1 VALUES (1, 'RECORD1');
+
+-- values are inserted in the order they are specified unless you provide the column order
+-- the below code inserts the first value of 'RECORD3' in COLUMN_2 and the second value of 3 in COLUMN_1
+INSERT INTO TEST_1 (COLUMN_2, COLUMN_1) VALUES ('RECORD3', 3);
+
+--IF NOT EXISTS will not throw an error if the Table already exists
+CREATE TABLE IF NOT EXISTS TEST_1 (COLUMN_1 INT, COLUMN_2 STRING);
+
+-- CREATE OR REPLACE will replace the Table if it exists
+CREATE OR REPLACE TABLE TEST_1 (COLUMN_1 INT, COLUMN_2 STRING);
+
+-- using the 3 level namespace to be explicit
+CREATE TABLE DEMO_CATALOG_1.DEMO_SCHEMA_1.TEST_2 (COLUMN_1 DATE, COLUMN_2 STRING, COLUMN_3 INT);
+
+--CREATE TABLE AS
+CREATE TABLE TEST_3 AS SELECT * FROM DEMO_CATALOG_1.demo_schema_1.TEST_1;

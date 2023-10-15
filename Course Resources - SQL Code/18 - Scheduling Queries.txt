@@ -1,0 +1,6 @@
+/*
+Links and Resources:
+Schedule a Query: https://learn.microsoft.com/en-us/azure/databricks/sql/user/queries/schedule-query
+*/
+
+select * from samples.nyctaxi.trips;

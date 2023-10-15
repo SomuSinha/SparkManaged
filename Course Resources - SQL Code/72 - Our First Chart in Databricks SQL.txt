@@ -1,0 +1,48 @@
+/*
+Dimensions: contain qualitative values (such as names, dates, or geographical data). 
+You can use dimensions to categorize, segment, and reveal the details in your data. 
+
+Measures: contain numeric, quantitative values that you can measure. 
+Measures can be aggregated in a visualization. 
+*/
+
+
+/*
+Bar Chart: https://learn.microsoft.com/en-us/azure/databricks/visualizations/visualization-types#bar-chart
+
+The bar chart is suitable for comparing multiple values. 
+The dimension axis shows the category items that are compared, 
+and the measure axis shows the value for each category item.
+The bar chart is also useful when you want to compare values 
+side by side.
+
+Advantages: The bar chart is easy to read and understand. 
+You get a good overview of values when using bar charts.
+
+Disadvantages: The bar chart does not work so well with many dimension values due to the limitation of the axis length. 
+If the dimensions do not fit, you can scroll using the scroll bar, but then you might not get the full picture.
+*/
+
+-- use the query result to create the bar chart
+select 
+ride_id, 
+member_casual, 
+rideable_type,
+started_at, 
+ended_at, 
+datediff(minute, started_at, ended_at) as trip_duration_mins 
+from course_project.citibike.jc_bike_data_22;
+
+
+
+
+
+
+
+
+
+
+
+
+
+

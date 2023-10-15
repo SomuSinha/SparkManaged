@@ -1,0 +1,15 @@
+create view course_project.citibike.vw_jc_bike_data_22
+as 
+select
+t1.ride_id,
+t1.member_casual,
+t1.rideable_type,
+datediff(minute, t1.started_at, t1.ended_at) as trip_duration_mins,
+t2.station_name as start_station_name,
+t3.station_name as end_station_name
+from course_project.citibike.jc_bike_data_22 as t1
+inner join course_project.citibike.station_data as t2
+on t1.start_station_id = t2.station_id
+inner join course_project.citibike.station_data as t3
+on t1.end_station_id = t3.station_id
+where t1.rideable_type <> 'docked_bike' and t1.end_station_id <> 'null';

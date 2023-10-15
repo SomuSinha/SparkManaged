@@ -1,0 +1,43 @@
+/*
+
+The GROUP BY clause in SQL is a powerful feature that allows you to group rows based on the values in one or more columns. 
+It is used in conjunction with aggregate functions to perform calculations on those groups.
+
+Syntax:
+SELECT non_aggregated_column(s), aggregation_column(s)
+FROM table_name
+WHERE condition --optional
+GROUP BY non_aggregated_column(s);
+
+*/
+
+-- this query will not work as we have not applied the group by aggregation
+select ride_id, count(trip_duration) from trip_duration;
+
+-- now the query will work
+select ride_id, count(trip_duration) from trip_duration group by ride_id;
+
+
+--creating the group_by_demo table
+-- please ensure the relevant catalog and schema are selected
+create table group_by_demo as select ride_id, member_casual, rideable_type, datediff(MINUTE, started_at, ended_at) as trip_duration from jc_bike_data_22;
+
+--selecting all records from the group_by_demo table
+select * from group_by_demo;
+
+-- grouping without an aggregation returns unique values for the selected column(s)
+select member_casual from group_by_demo group by member_casual;
+
+
+-- group by with an aggregation
+select member_casual, mean(trip_duration) as mean_duration from group_by_demo group by member_casual;
+
+
+-- group by multiple columns 
+select member_casual, rideable_type, sum(trip_duration) as total_duration from group_by_demo group by member_casual, rideable_type;
+
+-- all non aggregated columns must be in the group by clause otherwise it will result in an error as per this query
+select member_casual, rideable_type, sum(trip_duration) as total_duration from group_by_demo group by member_casual;
+
+-- using index numbers for columns in the group by clause
+select member_casual, rideable_type, sum(trip_duration) as total_duration from group_by_demo group by 1,2 ;

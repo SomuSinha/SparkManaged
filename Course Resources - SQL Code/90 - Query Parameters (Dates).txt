@@ -1,0 +1,8 @@
+select 
+ride_id,
+member_casual,
+rideable_type,
+started_at,
+datediff(minute, started_at, ended_at) as trip_duration_mins
+from course_project.citibike.jc_bike_data_22
+where started_at between '{{ Select Start Date Range }}' and '{{ Select End Date Range }}' and member_casual = {{ Select Rider Type }};

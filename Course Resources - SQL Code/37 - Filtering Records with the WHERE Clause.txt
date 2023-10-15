@@ -1,0 +1,34 @@
+/*
+WHERE Clause: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-syntax-qry-select-where
+
+Syntax:
+SELECT column[s] FROM Table
+WHERE condition[s];
+
+Conditional Operators:
+= 'equal to'
+> 'greater than'
+>= 'geater than or equal to'
+< 'less than'
+<= 'less than or equal to'
+<> 'not equal to'
+
+*/
+
+
+-- filtering records where the start_station_id is 'HB103'
+-- please ensure you have selected the appropriate catalog and schema
+SELECT * FROM JC_BIKE_DATA_22 WHERE start_station_id = 'HB103';
+
+-- selecting records based on a timestamp column
+-- date / timestamp values should be enclosed in quotes
+SELECT * FROM JC_BIKE_DATA_22 WHERE started_at = '2022-08-19 01:04:00.000';
+
+-- numerical values do not need to be in quotes
+SELECT * FROM JC_BIKE_DATA_22 WHERE start_lat = 40.72;
+
+-- using the greater than or equal to operator in the condition
+SELECT * FROM JC_BIKE_DATA_22 WHERE started_at >= '2022-08-19 01:04:00.000';
+
+-- using the not equal to operator
+SELECT * FROM JC_BIKE_DATA_22 WHERE member_casual <> 'member';

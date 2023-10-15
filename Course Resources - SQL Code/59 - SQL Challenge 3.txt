@@ -1,0 +1,15 @@
+/*
+SQL CHALLENGE
+
+Return a query that shows the total number of journeys for each month. Use the 
+started_at column to reference when each journey occured.
+
+Use the jc_bike_data_22 table.
+*/
+
+select 
+date_format(started_at, 'yy-MM') as year_month, 
+count(*) as total_rides
+from course_project.citibike.jc_bike_data_22 
+group by date_format(started_at, 'yy-MM')
+order by year_month asc;

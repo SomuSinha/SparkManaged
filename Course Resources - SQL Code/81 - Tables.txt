@@ -1,0 +1,12 @@
+--Table Visualization
+-- https://learn.microsoft.com/en-us/azure/databricks/visualizations/visualization-types#table
+
+-- use the query result to create the table
+select 
+rideable_type as `Type of Bike`,
+member_casual as `Rider Type`, 
+count(*) as `Number of Trips` 
+from course_project.citibike.jc_bike_data_22 
+group by 
+rideable_type,
+member_casual;

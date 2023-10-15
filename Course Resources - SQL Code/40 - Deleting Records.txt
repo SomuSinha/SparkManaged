@@ -1,0 +1,18 @@
+/*
+DELETE FROM: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/delta-delete-from
+
+Syntax:
+DELETE FROM table_name [table_alias] [WHERE predicate]
+
+*/
+
+-- creating a Table using CTAS
+-- please select the appropriate catalog and schema
+CREATE TABLE temp_station_data AS SELECT * FROM station_data;
+
+
+-- deleting records where station_id is 'HB203'
+delete from temp_station_data where station_id = 'HB203';
+
+-- all records are deleted if no predicate is specified
+delete from temp_station_data;

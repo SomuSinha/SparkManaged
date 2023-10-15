@@ -1,0 +1,22 @@
+/*
+SQL CHALLENGE
+
+I’d like you to create a view called vw_outliers in the course_project 
+catalog of the citibike schema. The view should contains only records where the trip 
+duration is less than 0 or greater than 2000 minutes, along with the ride id and 
+start and end station ids.
+
+Use the jc_bike_data_22 table.
+*/
+
+create view course_project.citibike.vw_outliers as
+select
+ride_id,
+start_station_id,
+end_station_id,
+datediff(minute, started_at, ended_at) as trip_duration_mins
+from course_project.citibike.jc_bike_data_22
+where datediff(minute, started_at, ended_at) <0
+or datediff(minute, started_at, ended_at) >2000;
+
+

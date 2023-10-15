@@ -1,0 +1,9 @@
+/*
+SELECT DISTINCT: Select all matching rows from the table references after removing duplicates in results.
+*/
+
+-- selecing records where the combination of start_station_id and end_station_id is unique
+select distinct start_station_id, end_station_id from jc_bike_data_22;
+
+-- selecing records where values in all columns are unique
+SELECT DISTINCT * FROM JC_BIKE_DATA_22;

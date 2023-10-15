@@ -1,0 +1,14 @@
+/*
+Aggregation Functions: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-functions-builtin#aggregate-functions
+*/
+
+select * from trip_duration;
+
+-- sum, mean, max and min
+select sum(trip_duration), mean(trip_duration), max(trip_duration), min(trip_duration) from trip_duration;
+
+
+-- count
+select count(ride_id), count(trip_duration) from trip_duration;
+select count(trip_duration) from trip_duration;
+select ride_id, count(trip_duration) from trip_duration;

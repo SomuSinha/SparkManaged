@@ -1,0 +1,57 @@
+/*
+Set Operators: Combines two subqueries into a single one. 
+
+https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-syntax-qry-select-setops
+
+Union: Union returns the result of subquery1 plus the rows of subquery2
+
+Syntax:
+
+(subquery1)
+[ALL|DISTINCT] UNION
+(sunquery2);
+
+*/
+
+
+(select * from jc_bike_data_22 order by started_at asc limit 5) 
+union 
+(select * from jc_bike_data_22 order by started_at desc limit 5);
+
+
+
+/*
+Intersect: Returns the set of rows which are in both subqueries.
+
+Syntax:
+
+(subquery1)
+[ALL|DISTINCT] INTERSECT
+(sunquery2);
+
+*/
+
+(select * from jc_bike_data_22 where started_at between '2022-01-01 00:10:00.000' and '2022-01-01 00:12:00.000')
+intersect
+(select * from jc_bike_data_22 where started_at between '2022-01-01 00:11:00.000' and '2022-01-01 00:19:00.000');
+
+
+
+/*
+Except: Returns the rows in subquery1 which are not in subquery2.
+
+Syntax:
+
+(subquery1)
+[ALL|DISTINCT] EXCEPT
+(sunquery2);
+
+*/
+
+(select * from jc_bike_data_22 where started_at between '2022-01-01 00:10:00.000' and '2022-01-01 00:12:00.000')
+except
+(select * from jc_bike_data_22 where started_at between '2022-01-01 00:11:00.000' and '2022-01-01 00:19:00.000');
+
+
+
+

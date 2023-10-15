@@ -1,0 +1,21 @@
+/*
+Numerical Functions: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-functions-builtin#numeric-scalar-functions
+*/
+
+-- use the below code to create a table and insert records into it
+-- this table is used to demonstrate arithmetic operations and numerical functions
+CREATE TABLE course_project.default.num_func_demo (col1 DOUBLE, col2 DOUBLE);
+INSERT INTO course_project.default.num_func_demo VALUES (10.45332, 7);
+INSERT INTO course_project.default.num_func_demo VALUES (-10, 5);
+
+-- using arithmetic operations
+select col1, col2, col1+col2 as add_cols, col1-col2 as sub_cols, col1*col2 as mult_cols, col1/col2 as divide_cols from num_func_demo;
+
+--using the round function
+select col1, col2, col1+col2 as add_cols, col1-col2 as sub_cols, col1*col2 as mult_cols, round(col1/col2,1) as divide_cols_1dp from num_func_demo;
+
+--using the abs function
+select col1, abs(col1) from num_func_demo;
+
+--dropping the table
+drop table num_func_demo;

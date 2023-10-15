@@ -1,0 +1,20 @@
+/*
+Links and Resources:
+Use Schema Syntax: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-syntax-ddl-use-schema
+Use Catalog Syntax: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-syntax-ddl-use-catalog
+*/
+
+-- this will result in an error because the trips table is not in the default catalog and schema
+select * from trips;
+
+-- to be explicit you can use the 3 level namespace when referencing the table
+select * from samples.nyctaxi.trips;
+
+-- use catalog
+use catalog samples;
+
+-- use schema
+use schema nyctaxi;
+
+-- please run this query with the preceding 2 queries
+select * from trips;

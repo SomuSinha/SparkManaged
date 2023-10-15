@@ -1,0 +1,43 @@
+/*
+SQL CHALLENGE
+
+I’d like you to return results showing the number of total rides for short, medium
+and long duration journeys.
+
+A short journey lasts under 10 minutes
+A medium journey lasts between 10 - 60 minutes (inclusive)
+A long journey is over 60 minutes
+
+Use the jc_bike_data_22 dataset
+
+Use subqueries
+*/
+
+select 
+count(ride_id) as total_rides,
+case 
+  when trip_duration_mins <10 then 'Short'
+  when trip_duration_mins <=60 then 'Medium'
+  else 'Long'
+end as trip_classification
+from
+(select ride_id, datediff(minute, started_at, ended_at) as trip_duration_mins from jc_bike_data_22)
+group by
+case 
+  when trip_duration_mins <10 then 'Short'
+  when trip_duration_mins <=60 then 'Medium'
+  else 'Long'
+end
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,34 @@
+/*
+TO_DATE: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/functions/to_date
+TO_TIMESTAMP: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/functions/to_timestamp
+Datetime Patterns: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-datetime-pattern
+
+TO_DATE / TO_TIMESTAMP
+Returns expr cast to a date / timestamp using an optional formatting.
+
+Syntax:
+to_date(expr [, fmt] )
+to_timestamp(expr [, fmt] )
+
+Standard date format in Databricks = YYYY-MM-dd
+Standard timestamp format in Databricks = YYYY-MM-dd HH:mm:ss
+*/
+
+-- creating a table with date and timestamp columns
+create table date_conv_demo (col1 DATE, col2 TIMESTAMP);
+
+-- this record is not in the standard date and timestamp format so cannot be inserted into the table
+insert into date_conv_demo values ('01/12/88', '01/12/88 10:22');
+
+-- this record is in the standard date and timestamp format so willm be inserted
+insert into date_conv_demo values ('1988-12-01', '1988-12-01 10:22:00');
+
+-- dropping and re-creating the table with string columns
+drop table date_conv_demo;
+create table date_conv_demo (col1 STRING, col2 STRING);
+
+-- this time the date and timestamp information will be inserted as the data type of the columns is a string
+insert into date_conv_demo values ('01/12/88', '01/12/88 10:22');
+
+-- using to_date and to_timestamp to cast the string date and timestamp values to date and timestamp data types
+select col1, col2, to_date(col1, 'dd/MM/yy'), to_timestamp(col2,'dd/MM/yy HH:mm') from date_conv_demo;

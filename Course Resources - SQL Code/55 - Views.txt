@@ -1,0 +1,22 @@
+/*
+CREATE VIEW: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-syntax-ddl-create-view
+
+Views:
+Constructs a virtual table that has no physical data based on the result-set of a SQL query. 
+
+Syntax:
+CREATE [ OR REPLACE ] VIEW [ IF NOT EXISTS ] view_name
+AS query;
+*/
+
+select * from jc_bike_data_22;
+
+-- creating a view using the jc_bike_data_22 table
+create view course_project.citibike.vw_bike_data as select * from course_project.citibike.jc_bike_data_22 where start_station_id = 'JC014';
+
+-- when you query the view the underlying SQL query is executed, no physical data is stored
+select * from course_project.citibike.vw_bike_data;
+
+-- you can drop a view just like a table
+drop view course_project.citibike.vw_bike_data;
+

@@ -1,0 +1,77 @@
+/*
+MERGE INTO
+Merges a set of updates, insertions, and deletions based on a source table into a target Delta table.
+
+This statement is supported only for Delta Lake tables.
+
+Syntax:
+MERGE INTO target_table_name [target_alias]
+   USING source_table_reference [source_alias]
+   ON merge_condition
+   { WHEN MATCHED [ AND matched_condition ] THEN matched_action |
+     WHEN NOT MATCHED [BY TARGET] [ AND not_matched_condition ] THEN not_matched_action |
+     WHEN NOT MATCHED BY SOURCE [ AND not_matched_by_source_condition ] THEN not_matched_by_source_action } [...]
+
+matched_action
+ { DELETE |
+   UPDATE SET * |
+   UPDATE SET { column = { expr | DEFAULT } } [, ...] }
+
+not_matched_action
+ { INSERT * |
+   INSERT (column1 [, ...] ) VALUES ( expr | DEFAULT ] [, ...] )
+
+not_matched_by_source_action
+ { DELETE |
+   UPDATE SET { column = { expr | DEFAULT } } [, ...] }
+*/
+
+-- creating the target table
+create table main.default.target_table(id INT, name STRING, age INT);
+insert into main.default.target_table values (1, 'John', 30);
+insert into main.default.target_table values (3, 'Megan', 22);
+select * from main.default.target_table;
+
+-- creating the source table
+create table main.default.source_table(id INT, name STRING, age INT);
+insert into main.default.source_table values (1, 'John', 20);
+insert into main.default.source_table values (2, 'Anika', 19);
+select * from main.default.source_table;
+
+-- merging records, update when matched, insert when not matched
+merge into main.default.target_table as t 
+  using main.default.source_table as s 
+  on t.id = s.id
+  when matched then update set *
+  when not matched then insert *;
+
+-- this is equivalent to the previous statement
+merge into main.default.target_table as t 
+  using main.default.source_table as s 
+  on t.id = s.id
+  when matched then update set t.name = s.name, t.age = s.age;
+  when not matched then insert (t.id, t.name, t.age) values (s.id, s.name, s.age);
+
+
+
+
+-- Merge Into only works when the destination table is Delta format
+
+--creating the parquet target table, use your own external location
+create table main.default.target_table_ext(id INT, name STRING, age INT) using parquet location  'abfss://citibike-ext@extstorage639.dfs.core.windows.net/target_table_ext.parquet';
+insert into main.default.target_table_ext values (1, 'John', 30);
+insert into main.default.target_table_ext values (3, 'Megan', 22);
+select * from main.default.target_table_ext;
+
+--creating the parquet source table, use your own external location
+create table main.default.source_table_ext(id INT, name STRING, age INT) using parquet location  'abfss://citibike-ext@extstorage639.dfs.core.windows.net/source_table_ext.parquet';
+insert into main.default.source_table_ext values (1, 'John', 20);
+insert into main.default.source_table_ext values (2, 'Anika', 19);
+select * from main.default.source_table_ext;
+
+-- merge into will not work on parquet
+merge into main.default.target_table_ext as t 
+  using main.default.source_table_ext as s 
+  on t.id = s.id
+  when matched then update set *
+  when not matched then insert *;

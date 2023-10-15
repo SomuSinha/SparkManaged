@@ -1,0 +1,21 @@
+/*
+Databricks SQL Dashboards: https://learn.microsoft.com/en-us/azure/databricks/sql/user/dashboards/
+*/
+
+
+-- Filter Demo Query 1
+select
+member_casual as `Rider Type`,
+rideable_type as `Bike Type`,
+mean(trip_duration_mins) as `Average Trip Duration`
+from course_project.citibike.vw_jc_bike_data_22
+group by 1, 2;
+
+
+-- Filter Demo Query 2
+select
+member_casual as `Rider Type`,
+rideable_type as `Bike Type`,
+mean(trip_duration_mins) as `Average Trip Duration`
+from course_project.citibike.vw_jc_bike_data_22
+group by 1, 2;

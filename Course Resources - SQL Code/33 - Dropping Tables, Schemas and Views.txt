@@ -1,0 +1,22 @@
+/*
+Links and Resources:
+DROP CATALOG: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-syntax-ddl-drop-catalog
+DROP SCHEMA: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-syntax-ddl-drop-schema
+DROP TABLE: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-syntax-ddl-drop-table
+
+Syntax:
+
+DROP CATALOG [ IF EXISTS ] catalog_name [ RESTRICT | CASCADE ];
+DROP SCHEMA [ IF EXISTS ] schema_name [ RESTRICT | CASCADE ];
+DROP TABLE [ IF EXISTS ] table_name;
+  
+*/
+
+--Dropping a table
+DROP TABLE demo_catalog_1.demo_schema_1.test_1;
+
+-- To drop a schema with Tables inside it you must specify CASCADE
+DROP SCHEMA demo_schema_1 CASCADE;
+
+-- To drop a catalog with Schemas and Tables inside it you must specify CASCADE
+DROP CATALOG demo_catalog_2 CASCADE;

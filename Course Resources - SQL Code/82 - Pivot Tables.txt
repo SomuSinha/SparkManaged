@@ -1,0 +1,5 @@
+-- Pivot Table 
+-- https://learn.microsoft.com/en-us/azure/databricks/visualizations/visualization-types#pivot-table
+
+-- use the query result to create the pivot table
+select * from course_project.citibike.jc_bike_data_22;

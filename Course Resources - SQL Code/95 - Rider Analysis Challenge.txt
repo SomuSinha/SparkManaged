@@ -1,0 +1,22 @@
+/*
+The code below has been used to populate the visuals for my solution as part of the Rider Analysis Challenge
+*/
+
+-- KPI - Total Rides
+select 
+member_casual,
+count(*) as total_rides
+from course_project.citibike.vw_jc_bike_data_22
+group by member_casual;
+
+-- Charts - Heatmap and Area
+select 
+member_casual,
+rideable_type,
+started_at,
+trip_duration_mins,
+date_format(started_at, 'EEE') as day_of_week
+from course_project.citibike.vw_jc_bike_data_22
+order by started_at asc;
+
+

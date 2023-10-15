@@ -1,0 +1,14 @@
+/*
+Links and Resources:
+TRUNCATE TABLE: https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-syntax-ddl-truncate-table
+
+Syntax:
+
+TRUNCATE TABLE table_name
+*/
+
+-- creating a temporary Table using CTAS
+CREATE TABLE course_project.default.truncate_demo as SELECT * FROM course_project.citibike.station_data
+
+-- Truncating the Table
+TRUNCATE TABLE course_project.default.truncate_demo;

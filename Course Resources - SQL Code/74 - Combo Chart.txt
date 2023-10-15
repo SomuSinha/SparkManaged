@@ -1,0 +1,32 @@
+/*
+Combo Chart: https://learn.microsoft.com/en-us/azure/databricks/visualizations/visualization-types#combo
+The combo chart is suitable for comparing two sets of measure values that are usually difficult to compare because of the differences in scale. 
+It is basically a bar chart combined with a line chart.
+
+This chart allows you to have different measure scales, one to the left and one to the right.
+
+Advantages: The combo chart is the best choice when combining several measures of different value ranges.
+
+Disadvantages:The combo chart only supports one dimension, and can therefore not be used when you need to 
+include two or more dimensions in the visualization.
+*/
+
+-- use the query result to create the chart
+select 
+ride_id, 
+started_at,
+datediff(minute, started_at, ended_at) as trip_duration_mins 
+from course_project.citibike.jc_bike_data_22
+where started_at < '2022-07-01';
+
+
+
+
+
+
+
+
+
+
+
+

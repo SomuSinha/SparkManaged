@@ -1,0 +1,15 @@
+/*
+Subqueries: https://learn.microsoft.com/en-us/sql/relational-databases/performance/subqueries?view=sql-server-ver16
+
+A subquery is a query that is nested within another query. 
+
+It allows you to use the results of one query as a condition or data source for another query. 
+*/
+
+select * from jc_bike_data_22;
+
+-- creating a query that returns distinct start station IDs for ride rides lasting over 10,000 minutes
+select distinct start_station_id from jc_bike_data_22 where datediff(MINUTE, started_at, ended_at)>10000;
+
+-- using the previous query as a nested query to return the station names for all station_id values in the distinct start station ids of the previous query
+select * from station_data where station_id in (select distinct start_station_id from jc_bike_data_22 where datediff(MINUTE, started_at, ended_at)>10000);

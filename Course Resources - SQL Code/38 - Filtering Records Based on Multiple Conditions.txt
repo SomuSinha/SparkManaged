@@ -1,0 +1,48 @@
+/*
+AND predicate:
+https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/functions/and
+
+SELECT column1, column2, ...
+FROM table_name
+WHERE condition1 AND condition2 AND condition3 ...;
+
+OR predicate: 
+https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/functions/or
+
+SELECT column1, column2, ...
+FROM table_name
+WHERE condition1 OR condition2 OR condition3 ...;
+
+NOT predicate:
+https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/functions/not
+
+SELECT column1, column2, ...
+FROM table_name
+WHERE NOT condition;
+
+BETWEEN predicate:
+https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/functions/between
+
+SELECT column1, column2, ...
+FROM table_name
+WHERE column_name BETWEEN value1 AND value2;
+
+*/
+
+-- and
+select * from jc_bike_data_22 where member_casual = ‘casual’ and start_station_id = ‘JC014’;
+
+
+--or
+select * from jc_bike_data_22 where member_casual = 'casual' or start_station_id = 'JC014';
+
+
+--not
+select * from jc_bike_data_22 where NOT member_casual = 'casual';
+
+
+--between
+select * from jc_bike_data_22 where started_at between '2022-08-06' and '2022-08-07';
+
+-- when using multiple conditions and nested conditions please use parenthesis, parenthesis takes precedence over other predicates
+select * from jc_bike_data_22 where (start_station_id = 'HB103' and rideable_type = 'electric_bike') or (member_casual = 'casual');

@@ -4042,7 +4042,7 @@ Build Pipeline
 2> Create new feature branch based on release branch 
 3> create a new file azure_build_pipeline.yaml # copy yaml file 
 4> merge this file to the release branch 
-5> click on pipelines, create pipeline, choose azure repos, select project, choose existing azure pipeline yaml file 
+5> click on pipelines, create pipeline, choose azure repos, select project, choose existing azure pipeline yaml file # or under configure > starter pipeline > add publish pipeline artificat from right search > give artifact a name notebook > azure pipelines as artifcat publish location > add > task gets added to bottom 
 6> select release branch , select yaml file in path 
 7> click on continue 
 8> click down arrow button , save 

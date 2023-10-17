@@ -3244,6 +3244,26 @@ This approach of loading data into memory and processing it with multiple cores 
 
 
 
+Retrieving data from disk is typically more costly than accessing data from memory due to the inherent differences in their respective speeds and characteristics. Here's why retrieval from disk is slower and more costly:
+
+Speed: Memory is significantly faster than disk. Accessing data from memory involves nanosecond-level latencies, while disk access typically has millisecond-level latencies. This speed difference can be several orders of magnitude. In computing terms, memory access is nearly instantaneous, whereas disk access involves mechanical components (in the case of hard drives) or seeks across storage media (for both hard drives and solid-state drives), leading to slower data retrieval.
+
+Random vs. Sequential Access: Disk access often requires seeking to the appropriate location on the disk platter, which is a random access operation. In contrast, reading data from memory is generally sequential and doesn't involve physically moving components. Random access is much slower than sequential access.
+
+Bandwidth: Memory has much higher bandwidth compared to disks. This means that data can be read from memory at a much faster rate than from disk. Disk I/O operations are often a bottleneck in data processing because they can't keep up with the processing speed of modern CPUs.
+
+Data Transfer Rates: Disks have limited data transfer rates, while memory can deliver data at very high rates. Reading large amounts of data from disk can be time-consuming due to these limitations.
+
+Caching: In-memory data can be cached, which means that frequently accessed data is kept readily available in memory for faster access. Caching can significantly reduce the need to fetch data from disk repeatedly.
+
+Given these factors, modern data processing frameworks like Apache Spark aim to keep as much data as possible in memory, minimizing the need to retrieve data from disk. This in-memory processing approach greatly accelerates data operations and improves the overall performance of data-intensive tasks. Disk access is usually reserved for scenarios where data doesn't fit in memory or when data durability and persistence are required, but it's generally much slower in comparison to memory access.
+
+
+
+
+
+
+
 
 
 

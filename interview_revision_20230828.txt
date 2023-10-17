@@ -3237,6 +3237,16 @@ many action so many job hence many execution plans, data loaded in memory sperat
 multiple times same data may be loaded in memory , create network traffic and resource issue will be there 
 so if hitting so many action or calculation df in a loop , use cache, it is costly , also remember to uncache
 
+The key point to understand is that data partitions are not loaded into processing cores but rather into memory. The processing cores are responsible for executing tasks on the data that is in memory. When a specific task is assigned to a core, it operates on the data that's readily available in memory, which minimizes the need to access data from disk.
+
+This approach of loading data into memory and processing it with multiple cores in parallel is what allows Spark to achieve high performance and efficiency in distributed data processing.
+
+
+
+
+
+
+
 1> data partitin in disk loaded to memory rdd 
 2> partition in nodes task parallel , execute select , where 
 3> stages make these inter node tasks to talk like group, join wide with a buffer and shuffle 

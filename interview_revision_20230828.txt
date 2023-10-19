@@ -150,6 +150,16 @@ select tbl1.id, tbl2.name from
 tbl 
 inner join tbl2 on tbl.banner=tbl2.banner;
 
+with temp as 
+(select country, max(date) as max_date
+from tbl
+group by country),
+temp2 as 
+(select country, value, date
+from tbl where date<=(select min(max_date) from temp))
+select country, sum(value)
+from temp2
+group by country;
 
 
 create temporary table tmp

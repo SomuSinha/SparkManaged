@@ -169,8 +169,8 @@
 --full depressed clutch, mild clutch adjusted to use momentum
 --If lost momemtum, choose right lower gear
 --don't leave the clutch completely until ready to give the accelerator required by the gear, aid with accelerator (slowly but completely leave the accelerator)
---Only clutch to shift up, after increasing accelerator
---clutch break , rev match, then lower gear accordingly
+--Only clutch to shift up, after increasing accelerator  (unless gravity increase speed, then break)
+--clutch break , rev match, then lower gear accordingly (unless gravity slows down, then no break)
 --hose power, torque concept, more than gear higher the hose power, lower the torque, lower the gear higher the torque, lesser the hosepower.
 --multiple permutations, combinations , by the great God
 

@@ -166,7 +166,7 @@
 
 
 --summary
---full depressed clutch, mild clutch adjusted to use momentum
+--full depressed clutch, mild clutch adjusted to use momentum (also for eventual stop)
 --If lost momemtum, choose right lower gear
 --don't leave the clutch completely until ready to give the accelerator required by the gear, aid with accelerator (slowly but completely leave the accelerator)
 --Only clutch to shift up, after increasing accelerator  (unless gravity increase speed, then break)

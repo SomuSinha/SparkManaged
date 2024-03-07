@@ -173,6 +173,7 @@
 --clutch break , rev match, then lower gear accordingly (unless gravity slows down, then no break)
 --hose power, torque concept, more than gear higher the hose power, lower the torque, lower the gear higher the torque, lesser the hosepower.
 --engine constant rotating, start connecting with wheel when clutch is left slowly, engine get disconnected from wheel on clutch depressed.
+--mirrors
 --multiple permutations, combinations , by the great God
 
 

@@ -169,8 +169,8 @@
 --full depressed clutch, mild clutch adjusted to use momentum (also for eventual stop)
 --If lost momemtum, choose right lower gear
 --don't leave the clutch completely until ready to give the accelerator required by the gear, and car starts moving, aid with accelerator (slowly but completely leave the accelerator)
---Only clutch to shift up, after increasing accelerator  (unless gravity increase speed, then break)
---clutch break , rev match, then lower gear accordingly (unless gravity slows down, then no break)
+--Only full depressed clutch to shift up, after increasing accelerator  (unless gravity increase speed, then break)
+--full depressed clutch break , rev match, then lower gear accordingly (unless gravity slows down, then no break)
 --hose power, torque concept, more than gear higher the hose power, lower the torque, lower the gear higher the torque, lesser the hosepower.
 --engine constant rotating, start connecting with wheel when clutch is left slowly, engine get disconnected from wheel on clutch depressed.
 --lesser the clutch leave at gears, aid with accelerator, lesser the speed with which car moves, allows change of angles with steering in motion, more the clutch left faster the motion, aid with accelerator
@@ -179,6 +179,7 @@
 --can change angles with steering in motion, clutch fully left , aid with accelerator, for empty spaces
 --clutch can be left variably from full depressed position, aid with accelerator, depending on how fast want to go and obstacle, and gear in. aid with accelerator.
 --steering like precise handle, turn front wheel 
+--always full depressed clutch, mild brake to slow down, steer to change angle, until momentum there, still move, always start from there, dont leave the clutch completely until ready to give the accelerator for the gear, aid with accelerator, again full depressed clutch, mild brake adjusted accordingly to slow down, eventually leave clutch completely but slowly aid with accelerator, if momentum lost change to lower gear , start from full depressed position.
 --mirrors
 --multiple permutations, combinations , by the great God
 

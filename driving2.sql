@@ -194,10 +194,10 @@
 --hose power, torque concept, more than gear higher the hose power, lesser the torque and lower the gear higher the torque, lesser the hosepower.
 --engine constant rotating, start connecting with wheel when clutch is left slowly, engine get disconnected from wheel on clutch depressed.
 --eventually full clutch left from depressed position, accelerator to move, steer accordingly
---full depressed clutch, mild brake adjusted to slow down, or eventually stop, it uses the momentum, can steer accordingly
+--full depressed clutch, mild brake adjusted to slow down, or eventually stop, it uses the momentum, can steer accordingly, optionally choose to lower gear depending on the momentum lost.
 --leave the clutch slowly from full depressed position, don't leave fully until ready to give the accelerator required for the gear, aid with accelerator
 --leave of clutch is variable, more the clutch left, more would be speed, aid with accelerator, again full depressed clutch and mild brake adjusted to slow down, again leave the clutch slowly from full depressed position, don't leave fully until ready to give the accelerator required for the gear, aid with accelerator
---eventually leave the clutch fully, aid with accelerator
+--once speed builds up, proper accelerator given, shift up to higher gear using only full depressed clutch .eventually leave the clutch slowly but fully, aid with accelerator.
 --position with steering
 --multiple permutations, combinations , by the great God
 

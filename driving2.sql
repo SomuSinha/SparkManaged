@@ -174,7 +174,9 @@
 --hose power, torque concept, more than gear higher the hose power, lower the torque, lower the gear higher the torque, lesser the hosepower.
 --engine constant rotating, start connecting with wheel when clutch is left slowly, engine get disconnected from wheel on clutch depressed.
 --lesser the clucth leave at gears, aid with accelerator, lesser the speed with which car moves, allows change of angles in motion
-, however If the speed of car is more at any gear, full depressed clutch , mild brake adjusted, to lower speed and then change angle
+, however If the speed of car is more at any gear, full depressed clutch , mild brake adjusted, to lower speed and then change angle, then again leave full depressed clucth very slowly, lower gear if momentum lost
+--can change angles in motion , if empty spaces
+--steering like precise handle, turn front wheel 
 --mirrors
 --multiple permutations, combinations , by the great God
 

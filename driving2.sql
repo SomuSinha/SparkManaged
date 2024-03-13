@@ -168,11 +168,13 @@
 --summary
 --full depressed clutch, mild clutch adjusted to use momentum (also for eventual stop)
 --If lost momemtum, choose right lower gear
---don't leave the clutch completely until ready to give the accelerator required by the gear, aid with accelerator (slowly but completely leave the accelerator)
+--don't leave the clutch completely until ready to give the accelerator required by the gear, and car starts moving, aid with accelerator (slowly but completely leave the accelerator)
 --Only clutch to shift up, after increasing accelerator  (unless gravity increase speed, then break)
 --clutch break , rev match, then lower gear accordingly (unless gravity slows down, then no break)
 --hose power, torque concept, more than gear higher the hose power, lower the torque, lower the gear higher the torque, lesser the hosepower.
 --engine constant rotating, start connecting with wheel when clutch is left slowly, engine get disconnected from wheel on clutch depressed.
+--lesser the clucth leave at gears, aid with accelerator, lesser the speed with which car moves, allows change of angles in motion
+, however If the speed of car is more at any gear, full depressed clutch , mild brake adjusted, to lower speed and then change angle
 --mirrors
 --multiple permutations, combinations , by the great God
 

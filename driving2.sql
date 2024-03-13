@@ -174,9 +174,10 @@
 --hose power, torque concept, more than gear higher the hose power, lower the torque, lower the gear higher the torque, lesser the hosepower.
 --engine constant rotating, start connecting with wheel when clutch is left slowly, engine get disconnected from wheel on clutch depressed.
 --lesser the clutch leave at gears, aid with accelerator, lesser the speed with which car moves, allows change of angles with steering in motion, more the clutch left faster the motion, aid with accelerator
---full depressed, mild brake adjusted to adjust speed, moving engine and wheel, need some mating time, more the gear, more the mating time, aid with accelerator.
+--full depressed, mild brake adjusted to adjust speed, moving engine and wheel, need some mating time, higher the gear, more the mating time, aid with accelerator.
 --however If the speed of car is more at any gear, full depressed clutch , mild brake adjusted to lower speed and adjust angles with steering, mild brake doesn't fully stop vehicle, still allow maneuvers due to momentum, then again leave full depressed clutch very slowly, aid with accelerator, might need to fully stop with full depressed clutch and full brake, then change angle, then again leave full depressed clutch very slowly, aid with accelerator, lower gear if momentum lost
 --can change angles with steering in motion, clutch fully left , aid with accelerator, for empty spaces
+--clutch can be left variably from full depressed position, aid with accelerator, depending on how fast want to go and obstacle, and gear in. aid with accelerator.
 --steering like precise handle, turn front wheel 
 --mirrors
 --multiple permutations, combinations , by the great God

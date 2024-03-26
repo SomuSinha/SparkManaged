@@ -1,3 +1,5 @@
+# compare two excel files
+
 import pandas as pd
 
 def compare_excel_sheets(file1, file2):
@@ -35,7 +37,7 @@ compare_excel_sheets(file_path1, file_path2)
 
 
 
-
+# download a file from share point to local
 
 from shareplum import Site
 from shareplum import Office365
@@ -59,4 +61,14 @@ site = Site(site_url, authcookie=authcookie)
 
 # Download the file
 site.get_file(file_path, local_file_path)
+
+
+# rename an old excel file in DBFS
+
+# Specify the old and new file paths
+old_file_path = "/path/to/old/file.txt"
+new_file_path = "/path/to/new/file.txt"
+
+# Rename the file using dbutils.fs.mv() function
+dbutils.fs.mv(old_file_path, new_file_path)
 

@@ -1,0 +1,33 @@
+import pandas as pd
+
+def compare_excel_sheets(file1, file2):
+    # Read both Excel files
+    xls1 = pd.ExcelFile(file1)
+    xls2 = pd.ExcelFile(file2)
+
+    # Get sheet names from both files
+    sheet_names1 = xls1.sheet_names
+    sheet_names2 = xls2.sheet_names
+
+    # Check for new sheets
+    new_sheets = set(sheet_names2) - set(sheet_names1)
+    if new_sheets:
+        print("New sheets added in file2:", new_sheets)
+
+    # Iterate over common sheet names
+    common_sheets = set(sheet_names1) & set(sheet_names2)
+    for sheet_name in common_sheets:
+        df1 = pd.read_excel(file1, sheet_name)
+        df2 = pd.read_excel(file2, sheet_name)
+
+        # Check if data underneath the sheet changed
+        if not df1.equals(df2):
+            print(f"Changes detected in sheet '{sheet_name}':")
+            # You can add more detailed comparison logic here if needed
+
+# Provide paths to the Excel files
+file_path1 = 'file1.xlsx'
+file_path2 = 'file2.xlsx'
+
+# Compare Excel files
+compare_excel_sheets(file_path1, file_path2)

@@ -31,3 +31,32 @@ file_path2 = 'file2.xlsx'
 
 # Compare Excel files
 compare_excel_sheets(file_path1, file_path2)
+
+
+
+
+
+
+from shareplum import Site
+from shareplum import Office365
+
+# SharePoint site URL and credentials
+site_url = "https://your_sharepoint_site_url"
+username = "your_username"
+password = "your_password"
+
+# Path to the file on SharePoint
+file_path = "/sites/your_site_name/your_document_library/your_file.xlsx"
+
+# Local path where the downloaded file will be saved
+local_file_path = "local_path_to_save_downloaded_file/your_file.xlsx"
+
+# Initialize Office365 session
+authcookie = Office365(site_url, username=username, password=password).GetCookies()
+
+# Connect to the SharePoint site
+site = Site(site_url, authcookie=authcookie)
+
+# Download the file
+site.get_file(file_path, local_file_path)
+

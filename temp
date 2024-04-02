@@ -72,3 +72,124 @@ new_file_path = "/path/to/new/file.txt"
 # Rename the file using dbutils.fs.mv() function
 dbutils.fs.mv(old_file_path, new_file_path)
 
+
+
+
+
+
+
+import requests
+import json
+
+class Utilities:
+    __instance = None
+
+    def __init__(self):
+        """
+        Private constructor to prevent direct instantiation.
+        """
+        if Utilities.__instance is not None:
+            raise Exception("This class is a singleton! Use get_instance() method instead.")
+        else:
+            Utilities.__instance = self
+
+    @classmethod
+    def get_instance(cls):
+        """
+        Get instance of Utilities class.
+
+        Returns:
+            Utilities: Instance of Utilities class.
+        """
+        if cls.__instance is None:
+            cls.__instance = Utilities()
+        return cls.__instance
+
+    @staticmethod
+    def send_email_via_logic_app(logic_app_url: str, recipient: str, subject: str, body: str):
+        """
+        Send email via Azure Logic App.
+
+        Args:
+            logic_app_url (str): URL of the Azure Logic App endpoint.
+            recipient (str): Email address of the recipient.
+            subject (str): Subject of the email.
+            body (str): Body content of the email.
+
+        Returns:
+            None
+        """
+        headers = {
+            'Content-Type': 'application/json'
+        }
+
+        email_data = {
+            "recipient": recipient,
+            "subject": subject,
+            "body": body
+        }
+
+        try:
+            response = requests.post(logic_app_url, headers=headers, data=json.dumps(email_data))
+            if response.status_code == 200:
+                print("Email sent successfully!")
+            else:
+                print("Failed to send email. Status code:", response.status_code)
+        except Exception as e:
+            print("An error occurred while sending email:", e)
+
+    @staticmethod
+    def is_prime(number):
+        """
+        Check if a number is prime.
+
+        Args:
+            number (int): Number to check.
+
+        Returns:
+            bool: True if the number is prime, False otherwise.
+        """
+        if number <= 1:
+            return False
+        for i in range(2, int(number**0.5) + 1):
+            if number % i == 0:
+                return False
+        return True
+
+    def __private_method(self):
+        """
+        Example private method.
+        """
+        print("This is a private method.")
+
+    def public_method(self):
+        """
+        Example public method.
+        """
+        print("This is a public method.")
+
+# Example usage:
+if __name__ == "__main__":
+    # Accessing the instance of the Utilities class
+    utilities = Utilities.get_instance()
+
+    # Using the send_email_via_logic_app static method
+    logic_app_url = "YOUR_LOGIC_APP_URL_HERE"
+    recipient = "recipient@example.com"
+    subject = "Test Email"
+    body = "This is a test email sent via Azure Logic App."
+    utilities.send_email_via_logic_app(logic_app_url, recipient, subject, body)
+
+    # Using public method
+    utilities.public_method()
+
+    # Accessing a static method
+    print("Is 7 a prime number?", Utilities.is_prime(7))
+
+    # Attempting to access private method (will raise AttributeError)
+    try:
+        utilities.__private_method()
+    except AttributeError:
+        print("Cannot access private method directly.")
+
+

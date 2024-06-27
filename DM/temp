@@ -220,3 +220,69 @@ logger = configure_logger()
 # Log a test message
 logger.info("This is a test log message.")
 
+
+
+
+
+
+
+1. Coding Questions: Pyspark:
+You've been given some CSV files like karnataka.csv and maharashtra.csv in an ADLS location, each containing columns for first_name, last_name, age, sex, and location.
+Your task is to add a new column called state to each DataFrame. The state column should contain the state name extracted from the filename.
+For example:
+For karnataka.csv, the state column should contain the value 'karnataka'.
+For maharashtra.csv, the state column should contain the value 'maharashtra'.
+Your solution should utilize PySpark to efficiently handle large-scale data processing tasks.
+
+2. Coding Question: Python/ DSA:
+A. Reverse a string without using reverse function
+B. Write a python program to implement following. Given a pattern and a string. If string matches the pattern return true else return false. 
+Ex: 
+Pattern – “abba”, String – “dog cat cat dog” will return true. 
+Pattern – “aba”, String – “dog dog cat” will return false.
+
+3. Coding Question: SQL
+Find the 3-month rolling average of total revenue from purchases given a table with users, their purchase amount, and date purchased (YYYY-MM-DD). Output the year-month (YYYY-MM) and 3-month rolling average of revenue, sorted from earliest month to latest month.
+
+4. Explain Spark Architecture.
+
+5. What is Z-ordering?
+
+6. Difference between Datamart, Datawarehouse and Deltalake
+
+7. Compare performance of Managed and External Table
+
+
+
+
+- Python + Pandas = Data Manipulation
+- Python + Pyspark = Big Data Processing
+- Python + Scikit-Learn = Machine Learning
+- Python + TensorFlow = Deep Learning
+- Python + Matplotlib = Data Visualization
+- Python + Seaborn = Advanced Visualization
+- Python + Flask = Web Development
+- Python + Pygame = Game Development
+- Python + Kivy = Mobile App Development
+- Python + Django = Full Stack Web Development
+- Python + NumPy = Numerical Computation
+- Python + Keras = Neural Networks
+- Python + Plotly = Interactive Visualization
+- Python + FastAPI = Fast Web APIs
+- Python + Tkinter = GUI Development
+- Python + BeautifulSoup = Web Scraping
+- Python + Scrapy = Web Crawling
+- Python + OpenCV = Computer Vision
+- Python + Pillow = Image Processing
+- Python + SQLAlchemy = Database Management
+- Python + Requests = HTTP Requests
+- Python + PyTorch = Deep Learning
+- Python + NLTK = Natural Language Processing
+- Python + spaCy = Natural Language Processing
+- Python + Bokeh = Interactive Visualization
+- Python + Dash = Web-based Data Visualization
+- Python + Pydantic = Data Validation
+- Python + Celery = Task Queue Management
+- Python + Twisted = Network Programming
+- Python + Asyncio = Asynchronous Programming
+

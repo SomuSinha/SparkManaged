@@ -188,6 +188,7 @@
 --summary
 --full depressed clutch, mild brake adjusted to use momentum (also for eventual stop)
 --If lost momemtum, choose right lower gear
+--full depressed clucth to disconnect wheels from always running engine (stops power transmission to wheels and also stops from stalling), then brake to reduce wheel speed
 --don't leave the clutch completely until ready to give the accelerator required by the gear, and car starts moving, aid with accelerator (slowly but completely leave the accelerator)
 --Only full depressed clutch to shift up, after increasing accelerator  (unless gravity increase speed, then break)
 --full depressed clutch break , rev match, then lower gear accordingly (unless gravity slows down, then no break)

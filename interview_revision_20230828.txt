@@ -4192,7 +4192,7 @@ dbutils.library.restartPython()  # Removes Python state, but some libraries migh
 
 
 
-######sql , display if id in either
+######sql , display if id in either (can use OR or sperate using union all)
 
 SELECT
     COALESCE(t1.id, t2.id, t3.id) AS id,
@@ -4206,3 +4206,14 @@ FULL OUTER JOIN
 FULL OUTER JOIN
     table3 t3 ON COALESCE(t1.id, t2.id) = t3.id;
 
+#############which columsn are not null without case when
+
+SELECT 
+    id, 
+    TRIM(
+        COALESCE(col1 || ' is not null. ', '') || 
+        COALESCE(col2 || ' is not null. ', '') || 
+        COALESCE(col3 || ' is not null. ', '')
+    ) AS not_null_columns
+FROM 
+    your_table;

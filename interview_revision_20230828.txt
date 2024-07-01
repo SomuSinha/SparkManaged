@@ -4192,5 +4192,17 @@ dbutils.library.restartPython()  # Removes Python state, but some libraries migh
 
 
 
+######sql , display if id in either
 
+SELECT
+    COALESCE(t1.id, t2.id, t3.id) AS id,
+    t1.column1 AS t1_column1, t1.column2 AS t1_column2,
+    t2.column1 AS t2_column1, t2.column2 AS t2_column2,
+    t3.column1 AS t3_column1, t3.column2 AS t3_column2
+FROM
+    table1 t1
+FULL OUTER JOIN
+    table2 t2 ON t1.id = t2.id
+FULL OUTER JOIN
+    table3 t3 ON COALESCE(t1.id, t2.id) = t3.id;
 

@@ -502,3 +502,116 @@ Parse the JSON received from the alert.
 Use the "Send an email" action to configure and send the email.
 Integrate with Application Insights: In the alert rule configuration, use the Logic App as the action group.
 By using Azure Application Insights alerts and potentially integrating with Logic Apps, you can effectively monitor and send logs via email without needing SMTP credentials.
+
+
+To retrieve Application Insights logs using Python, you can use the azure-monitor-query package. This package allows you to query Application Insights logs with a specific instrumentation key. Below is a step-by-step guide on how to set this up:
+
+Step 1: Install the necessary package
+First, install the azure-monitor-query package if you haven't already:
+
+bash
+Copy code
+pip install azure-monitor-query
+Step 2: Set up the Azure credentials
+You'll need Azure credentials to authenticate your queries. You can use Azure Service Principal, Azure Managed Identity, or Azure CLI login.
+
+Here's an example using the DefaultAzureCredential:
+
+python
+Copy code
+from azure.identity import DefaultAzureCredential
+from azure.monitor.query import LogsQueryClient
+
+# Create a LogsQueryClient with DefaultAzureCredential
+credential = DefaultAzureCredential()
+client = LogsQueryClient(credential)
+Step 3: Define your query and execute it
+You can define your Kusto Query Language (KQL) query and execute it to retrieve the logs. Here’s an example:
+
+python
+Copy code
+from datetime import datetime, timedelta
+
+# Define the Application Insights query
+query = """
+traces
+| where timestamp > ago(1h)
+| project timestamp, message, severityLevel
+| order by timestamp desc
+"""
+
+# Replace 'your-instrumentation-key' with your actual instrumentation key
+application_id = 'your-instrumentation-key'
+
+# Execute the query
+response = client.query_workspace(
+    workspace_id=application_id,
+    query=query,
+    timespan=(datetime.now() - timedelta(hours=1), datetime.now())
+)
+
+# Print the results
+if response.status == 'Success':
+    for table in response.tables:
+        for row in table.rows:
+            print(row)
+else:
+    print(f"Query failed with status: {response.status}")
+Step 4: Handling authentication
+Make sure to handle authentication properly. If you’re using Azure Service Principal, you can use the following code to authenticate:
+
+python
+Copy code
+from azure.identity import ClientSecretCredential
+
+tenant_id = 'your-tenant-id'
+client_id = 'your-client-id'
+client_secret = 'your-client-secret'
+
+credential = ClientSecretCredential(tenant_id, client_id, client_secret)
+client = LogsQueryClient(credential)
+Full Example
+python
+Copy code
+from azure.identity import DefaultAzureCredential
+from azure.monitor.query import LogsQueryClient
+from datetime import datetime, timedelta
+
+# Set up the credential and client
+credential = DefaultAzureCredential()
+client = LogsQueryClient(credential)
+
+# Define the Application Insights query
+query = """
+traces
+| where timestamp > ago(1h)
+| project timestamp, message, severityLevel
+| order by timestamp desc
+"""
+
+# Replace 'your-instrumentation-key' with your actual instrumentation key
+application_id = 'your-instrumentation-key'
+
+# Execute the query
+response = client.query_workspace(
+    workspace_id=application_id,
+    query=query,
+    timespan=(datetime.now() - timedelta(hours=1), datetime.now())
+)
+
+# Print the results
+if response.status == 'Success':
+    for table in response.tables:
+        for row in table.rows:
+            print(row)
+else:
+    print(f"Query failed with status: {response.status}")
+Replace 'your-instrumentation-key', 'your-tenant-id', 'your-client-id', and 'your-client-secret' with your actual values. This script will retrieve the logs from the last hour and print them.
+
+Make sure to manage your credentials securely and avoid hardcoding them in your script. Use environment variables or Azure Key Vault for sensitive information.
+
+
+
+
+
+

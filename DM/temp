@@ -286,3 +286,219 @@ Find the 3-month rolling average of total revenue from purchases given a table w
 - Python + Twisted = Network Programming
 - Python + Asyncio = Asynchronous Programming
 
+
+##############################App Insight#################################################################
+
+
+To achieve your requirements, you can follow these steps:
+
+Send logs from Databricks to Azure Application Insights.
+Retrieve logs from Application Insights.
+Send the logs via email to users.
+Here's an example Python code that covers these steps:
+
+Step 1: Send logs from Databricks to Azure Application Insights
+First, you need to install the applicationinsights library on your Databricks cluster:
+
+sh
+Copy code
+pip install applicationinsights
+Now, create a function in Databricks to send logs to Azure Application Insights:
+
+python
+Copy code
+from applicationinsights import TelemetryClient
+
+def send_log_to_appinsights(instrumentation_key, message, properties=None):
+    tc = TelemetryClient(instrumentation_key)
+    tc.track_event(message, properties)
+    tc.flush()
+
+# Usage example:
+instrumentation_key = "YOUR_APPINSIGHTS_INSTRUMENTATION_KEY"
+send_log_to_appinsights(instrumentation_key, "This is a test log", {"property1": "value1", "property2": "value2"})
+Step 2: Retrieve logs from Application Insights
+To retrieve logs from Application Insights, you need to query the logs using the Application Insights REST API or Azure Monitor Query SDK. Here, we'll use the REST API for simplicity:
+
+First, install the required library:
+
+sh
+Copy code
+pip install azure-identity azure-monitor-query
+Now, create a function to retrieve logs:
+
+python
+Copy code
+import requests
+from azure.identity import DefaultAzureCredential
+from azure.monitor.query import LogsQueryClient
+
+def retrieve_logs_from_appinsights(app_id, tenant_id, client_id, client_secret, query):
+    credential = DefaultAzureCredential()
+    client = LogsQueryClient(credential)
+
+    response = client.query_workspace(
+        workspace_id=app_id,
+        query=query
+    )
+
+    return response.tables
+
+# Usage example:
+app_id = "YOUR_APPINSIGHTS_APP_ID"
+tenant_id = "YOUR_TENANT_ID"
+client_id = "YOUR_CLIENT_ID"
+client_secret = "YOUR_CLIENT_SECRET"
+query = "requests | take 10"
+
+logs = retrieve_logs_from_appinsights(app_id, tenant_id, client_id, client_secret, query)
+Step 3: Send the logs via email to users
+Install the smtplib and email libraries:
+
+sh
+Copy code
+pip install secure-smtplib
+Now, create a function to send the logs via email:
+
+python
+Copy code
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+def send_email(smtp_server, smtp_port, smtp_user, smtp_password, from_email, to_emails, subject, body):
+    msg = MIMEMultipart()
+    msg['From'] = from_email
+    msg['To'] = ", ".join(to_emails)
+    msg['Subject'] = subject
+    msg.attach(MIMEText(body, 'plain'))
+
+    server = smtplib.SMTP(smtp_server, smtp_port)
+    server.starttls()
+    server.login(smtp_user, smtp_password)
+    server.sendmail(from_email, to_emails, msg.as_string())
+    server.quit()
+
+# Usage example:
+smtp_server = "smtp.example.com"
+smtp_port = 587
+smtp_user = "your_smtp_username"
+smtp_password = "your_smtp_password"
+from_email = "from@example.com"
+to_emails = ["to1@example.com", "to2@example.com"]
+subject = "App Insights Logs"
+body = "Here are the logs: \n" + str(logs)
+
+send_email(smtp_server, smtp_port, smtp_user, smtp_password, from_email, to_emails, subject, body)
+Putting it all together
+You can create a function that combines all these steps:
+
+python
+Copy code
+def main():
+    # Step 1: Send logs to Application Insights
+    instrumentation_key = "YOUR_APPINSIGHTS_INSTRUMENTATION_KEY"
+    send_log_to_appinsights(instrumentation_key, "This is a test log", {"property1": "value1", "property2": "value2"})
+    
+    # Step 2: Retrieve logs from Application Insights
+    app_id = "YOUR_APPINSIGHTS_APP_ID"
+    tenant_id = "YOUR_TENANT_ID"
+    client_id = "YOUR_CLIENT_ID"
+    client_secret = "YOUR_CLIENT_SECRET"
+    query = "requests | take 10"
+    
+    logs = retrieve_logs_from_appinsights(app_id, tenant_id, client_id, client_secret, query)
+    
+    # Step 3: Send the logs via email to users
+    smtp_server = "smtp.example.com"
+    smtp_port = 587
+    smtp_user = "your_smtp_username"
+    smtp_password = "your_smtp_password"
+    from_email = "from@example.com"
+    to_emails = ["to1@example.com", "to2@example.com"]
+    subject = "App Insights Logs"
+    body = "Here are the logs: \n" + str(logs)
+    
+    send_email(smtp_server, smtp_port, smtp_user, smtp_password, from_email, to_emails, subject, body)
+
+if __name__ == "__main__":
+    main()
+Make sure to replace placeholders with your actual values for instrumentation_key, app_id, tenant_id, client_id, client_secret, smtp_server, smtp_port, smtp_user, smtp_password, from_email, and to_emails.
+
+This script will:
+
+Send a log to Application Insights.
+Retrieve the latest logs from Application Insights.
+Send the retrieved logs to the specified email addresses.
+I don't have smtp username password, suggest using appinsight alerts
+ChatGPT
+If you don't have SMTP credentials, you can use Azure Application Insights alerts to send logs or notifications via email. Azure Application Insights provides built-in alerting capabilities that allow you to trigger actions based on log data and metrics. You can configure alerts to send emails directly from the Azure portal without needing an SMTP server.
+
+Here’s how to set up and configure Application Insights alerts to send logs via email:
+
+Step 1: Create a Log Alert in Azure Application Insights
+Navigate to Application Insights: Go to the Azure portal and navigate to your Application Insights resource.
+
+Create a Log Alert Rule:
+
+Select "Alerts" from the left-hand menu.
+Click on "New alert rule."
+Define the scope: Select the Application Insights resource you want to monitor.
+Add a condition: Click "Add condition," and select "Custom log search."
+Define your query: Enter a Kusto Query Language (KQL) query to define the logs you want to alert on. For example, to alert on failed requests:
+kql
+Copy code
+requests
+| where resultCode != "200"
+Set the alert logic: Configure the condition to trigger when the number of results meets your threshold.
+Configure the Action Group:
+
+Click "Add action group."
+Name the action group and provide a short name.
+Select "Action type" as "Email/SMS/Push/Voice."
+Configure email settings: Enter the email addresses you want to receive the alerts.
+Save the action group.
+Create and Enable the Alert Rule:
+
+Give the alert rule a name and description.
+Set the severity level.
+Review and create the alert rule.
+Step 2: Retrieve Logs from Application Insights via API (Optional)
+If you need to retrieve logs programmatically and send them via another method, you can use the Application Insights REST API or Azure Monitor Query SDK. Here's an example using the REST API:
+
+python
+Copy code
+import requests
+from azure.identity import DefaultAzureCredential
+from azure.monitor.query import LogsQueryClient
+
+def retrieve_logs_from_appinsights(app_id, tenant_id, client_id, client_secret, query):
+    credential = DefaultAzureCredential()
+    client = LogsQueryClient(credential)
+
+    response = client.query_workspace(
+        workspace_id=app_id,
+        query=query
+    )
+
+    return response.tables
+
+# Usage example:
+app_id = "YOUR_APPINSIGHTS_APP_ID"
+tenant_id = "YOUR_TENANT_ID"
+client_id = "YOUR_CLIENT_ID"
+client_secret = "YOUR_CLIENT_SECRET"
+query = "requests | where resultCode != '200' | take 10"
+
+logs = retrieve_logs_from_appinsights(app_id, tenant_id, client_id, client_secret, query)
+print(logs)
+Step 3: Using Logic Apps for Additional Email Customization (Optional)
+If you need more customization for your email notifications, you can use Azure Logic Apps to send emails based on Application Insights alerts.
+
+Create a Logic App: In the Azure portal, create a new Logic App.
+Define the Trigger: Use "When a HTTP request is received" as the trigger.
+Add Actions:
+Parse the JSON received from the alert.
+Use the "Send an email" action to configure and send the email.
+Integrate with Application Insights: In the alert rule configuration, use the Logic App as the action group.
+By using Azure Application Insights alerts and potentially integrating with Logic Apps, you can effectively monitor and send logs via email without needing SMTP credentials.

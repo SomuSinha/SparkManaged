@@ -615,3 +615,39 @@ Make sure to manage your credentials securely and avoid hardcoding them in your 
 
 
 
+
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
+
+# Initialize SparkSession
+spark = SparkSession.builder.appName("SampleDataFrame").getOrCreate()
+
+# Sample DataFrame creation for demonstration
+data = [
+    ("California", 1), ("California", 2), ("California", 3),
+    ("New York", 4), ("New York", 5), ("New York", 6),
+    ("Texas", 7), ("Texas", 8), ("Texas", 9),
+    # Add more records as needed
+]
+columns = ["state", "value"]
+df = spark.createDataFrame(data, columns)
+
+# Display the original DataFrame
+df.show()
+
+# Take 10% of records per state
+fractions = df.select("state").distinct().withColumn("fraction", lit(0.1)).rdd.collectAsMap()
+sampled_df = df.sampleBy("state", fractions, seed=42)
+
+# Display the sampled DataFrame
+sampled_df.show()
+
+# Stop the SparkSession
+spark.stop()
+
+
+
+
+
+
+

@@ -698,4 +698,62 @@ append_json_to_file(json_content_example)
 
 
 
+import json
+import os
+from pyspark.sql import SparkSession
+
+# Initialize Spark session
+spark = SparkSession.builder.appName("AppendJSON").getOrCreate()
+
+def create_or_clear_file(file_path="/dbfs/tmp/json_data.txt"):
+    """
+    Creates a file or clears its content if it already exists.
+    
+    :param file_path: The path to the file in DBFS.
+    """
+    with open(file_path, "w") as file:
+        file.write("")
+
+def append_json_to_file(json_content, file_path="/dbfs/tmp/json_data.txt"):
+    """
+    Appends JSON content to a file in DBFS.
+    
+    :param json_content: The JSON content to append (dictionary).
+    :param file_path: The path to the file in DBFS.
+    """
+    try:
+        # Read existing content if file exists and is not empty
+        try:
+            with open(file_path, "r") as file:
+                data = file.read()
+                if data.strip():  # Check if file is not empty
+                    existing_data = json.loads(data)
+                else:
+                    existing_data = []
+        except FileNotFoundError:
+            existing_data = []
+        
+        # Append new JSON content
+        existing_data.append(json_content)
+        
+        # Write updated content back to file
+        with open(file_path, "w") as file:
+            file.write(json.dumps(existing_data, indent=4))
+        
+        print("JSON content appended successfully.")
+    
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+# Create or clear the file first
+create_or_clear_file()
+
+# Example JSON content
+json_content_example = {
+    "name": "example",
+    "value": 42
+}
+
+# Append example JSON content to file
+append_json_to_file(json_content_example)
 

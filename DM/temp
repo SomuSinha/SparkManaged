@@ -835,3 +835,35 @@ def find_differences(df1, df2, key_cols):
 diff_df = find_differences(df1_diff, df2_diff, key_columns)
 diff_df.show()
 
+
+
+
+
+# Find column differences within the retrieved differences
+key_columns = ["address", "building_id"]
+
+# Create a function to find differences in columns
+def find_differences(df1, df2, key_cols):
+    diff_cols = [col for col in df1.columns if col not in key_cols]
+    df1_keyed = df1.select(key_cols + diff_cols)
+    df2_keyed = df2.select(key_cols + diff_cols)
+    join_expr = [df1_keyed[k] == df2_keyed[k] for k in key_cols]
+    
+    diff_df = df1_keyed.alias("df1").join(df2_keyed.alias("df2"), join_expr, "fullouter")
+    
+    for column in diff_cols:
+        diff_df = diff_df.withColumn(
+            f"{column}_diff",
+            when(
+                (col(f"df1.{column}").isNull() & col(f"df2.{column}").isNotNull()) | 
+                (col(f"df1.{column}").isNotNull() & col(f"df2.{column}").isNull()) | 
+                (col(f"df1.{column}") != col(f"df2.{column}")),
+                lit("Different")
+            ).otherwise(lit("Same"))
+        )
+    
+    return diff_df
+
+# Apply the function to the differences
+diff_df = find_differences(df1_diff, df2_diff, key_columns)
+diff_df.show(truncate=False)

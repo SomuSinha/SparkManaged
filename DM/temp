@@ -881,3 +881,106 @@ same_columns_expr = concat_ws(", ", *[when(col(f"{col}_diff") == "Same", lit(col
 # Apply the function to the differences
 diff_df = find_differences(df1_diff, df2_diff, key_columns)
 diff_df.select(key_columns + ["matched", "unmatched"]).show(truncate=False)
+
+
+######################################
+
+
+
+
+# Import necessary libraries
+import pandas as pd
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, lit, when, expr, concat_ws
+
+# Initialize Spark session
+spark = SparkSession.builder.appName("FileComparison").getOrCreate()
+
+# Create widgets for file input
+dbutils.widgets.text("file_path_1", "")
+dbutils.widgets.text("file_path_2", "")
+dbutils.widgets.dropdown("file_type_1", "csv", ["csv", "json", "excel"])
+dbutils.widgets.dropdown("file_type_2", "csv", ["csv", "json", "excel"])
+
+# Read widget values
+file_path_1 = dbutils.widgets.get("file_path_1")
+file_path_2 = dbutils.widgets.get("file_path_2")
+file_type_1 = dbutils.widgets.get("file_type_1")
+file_type_2 = dbutils.widgets.get("file_type_2")
+
+# Function to read different file types and convert to Spark DataFrame
+def read_file(file_path, file_type):
+    if file_type == "csv":
+        return spark.read.option("header", "true").csv(file_path)
+    elif file_type == "json":
+        return spark.read.json(file_path)
+    elif file_type == "excel":
+        pdf = pd.read_excel(file_path)
+        return spark.createDataFrame(pdf)
+
+# Read both files
+df1 = read_file(file_path_1, file_type_1)
+df2 = read_file(file_path_2, file_type_2)
+
+# Convert DataFrames to have the same schema by selecting common columns
+common_cols = list(set(df1.columns).intersection(set(df2.columns)))
+df1 = df1.select(common_cols)
+df2 = df2.select(common_cols)
+
+# Register DataFrames as temporary views for SQL queries
+df1.createOrReplaceTempView("df1")
+df2.createOrReplaceTempView("df2")
+
+# Full outer join on address and building_id
+joined_df = spark.sql("""
+SELECT
+  COALESCE(df1.address, df2.address) AS address,
+  COALESCE(df1.building_id, df2.building_id) AS building_id,
+  df1.*,
+  df2.*
+FROM df1
+FULL OUTER JOIN df2
+ON df1.address = df2.address AND df1.building_id = df2.building_id
+""")
+
+# Function to determine the status of each row
+def determine_status(row):
+    if row[2] is None:
+        return "row in second not in first"
+    elif row[3] is None:
+        return "row in first not in second"
+    else:
+        return "rows which match"
+
+# Function to find differences in columns
+def find_column_differences(row):
+    diff_columns = []
+    for col_name in common_cols:
+        if row[f"df1.{col_name}"] != row[f"df2.{col_name}"]:
+            diff_columns.append(f"{col_name}: {row[f'df1.{col_name}']} != {row[f'df2.{col_name}']}")
+    return ", ".join(diff_columns)
+
+# Apply the function to determine the status and find column differences
+joined_df = joined_df.withColumn("status", expr("CASE WHEN df1.address IS NULL THEN 'row in second not in first' WHEN df2.address IS NULL THEN 'row in first not in second' ELSE 'rows which match' END"))
+
+# Filter matched rows and find column differences
+matched_df = joined_df.filter("status = 'rows which match'")
+diff_df = matched_df.withColumn("column_differences", expr("CASE WHEN " + " OR ".join([f"df1.{col} != df2.{col}" for col in common_cols]) + " THEN 'rows that match but column values are different' ELSE NULL END"))
+diff_df = diff_df.filter("column_differences IS NOT NULL")
+
+# Print the results
+print("Rows in first not in second:")
+joined_df.filter("status = 'row in first not in second'").show(truncate=False)
+
+print("Rows in second not in first:")
+joined_df.filter("status = 'row in second not in first'").show(truncate=False)
+
+print("Rows which match:")
+matched_df.show(truncate=False)
+
+print("Rows that match but column values are different:")
+diff_df.show(truncate=False)
+
+# Create a message for rows that match but have different column values
+diff_message_df = diff_df.withColumn("diff_message", concat_ws(", ", *[when(col(f"df1.{col}") != col(f"df2.{col}"), lit(f"{col}: df1={col(f'df1.{col}')} != df2={col(f'df2.{col}')}")).otherwise(lit(None)) for col in common_cols]))
+diff_message_df.select("address", "building_id", "diff_message").show(truncate=False)

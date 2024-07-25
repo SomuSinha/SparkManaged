@@ -757,3 +757,81 @@ json_content_example = {
 # Append example JSON content to file
 append_json_to_file(json_content_example)
 
+
+
+
+Build a databricks widget to compare 2 files.
+
+a> It should take the file input type as excel, csv and JSON and compare the files, after converting both files csv.
+b> It should then print rows in first file , not in second file , using exceptAll
+c> Then print rows in second file not in first file, using exceptAll
+d> Now within the rertreived differences in point b and c , find what column values were actually different and what values were same, using address and building_id as the key
+
+
+# Import necessary libraries
+import pandas as pd
+import json
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
+
+# Initialize Spark session
+spark = SparkSession.builder.appName("FileComparison").getOrCreate()
+
+# Create widgets for file input
+dbutils.widgets.text("file_path_1", "")
+dbutils.widgets.text("file_path_2", "")
+dbutils.widgets.dropdown("file_type_1", "csv", ["csv", "json", "excel"])
+dbutils.widgets.dropdown("file_type_2", "csv", ["csv", "json", "excel"])
+
+# Read widget values
+file_path_1 = dbutils.widgets.get("file_path_1")
+file_path_2 = dbutils.widgets.get("file_path_2")
+file_type_1 = dbutils.widgets.get("file_type_1")
+file_type_2 = dbutils.widgets.get("file_type_2")
+
+# Function to read different file types and convert to Spark DataFrame
+def read_file(file_path, file_type):
+    if file_type == "csv":
+        return spark.read.option("header", "true").csv(file_path)
+    elif file_type == "json":
+        return spark.read.json(file_path)
+    elif file_type == "excel":
+        pdf = pd.read_excel(file_path)
+        return spark.createDataFrame(pdf)
+
+# Read both files
+df1 = read_file(file_path_1, file_type_1)
+df2 = read_file(file_path_2, file_type_2)
+
+# Convert DataFrames to have the same schema by selecting common columns
+common_cols = list(set(df1.columns).intersection(set(df2.columns)))
+df1 = df1.select(common_cols)
+df2 = df2.select(common_cols)
+
+# Print rows in first file not in second file
+print("Rows in first file not in second file:")
+df1_diff = df1.exceptAll(df2)
+df1_diff.show()
+
+# Print rows in second file not in first file
+print("Rows in second file not in first file:")
+df2_diff = df2.exceptAll(df1)
+df2_diff.show()
+
+# Find column differences within the retrieved differences
+key_columns = ["address", "building_id"]
+
+# Create a function to find differences in columns
+def find_differences(df1, df2, key_cols):
+    df1_keyed = df1.select(key_cols + [col for col in df1.columns if col not in key_cols])
+    df2_keyed = df2.select(key_cols + [col for col in df2.columns if col not in key_cols])
+    df1_keyed = df1_keyed.withColumnRenamed("address", "address_1").withColumnRenamed("building_id", "building_id_1")
+    df2_keyed = df2_keyed.withColumnRenamed("address", "address_2").withColumnRenamed("building_id", "building_id_2")
+    diff_df = df1_keyed.join(df2_keyed, (df1_keyed.address_1 == df2_keyed.address_2) & (df1_keyed.building_id_1 == df2_keyed.building_id_2), "outer")
+    diff_df = diff_df.withColumn("Same/Changed", col("address_1") == col("address_2") & col("building_id_1") == col("building_id_2"))
+    return diff_df
+
+# Apply the function to the differences
+diff_df = find_differences(df1_diff, df2_diff, key_columns)
+diff_df.show()
+

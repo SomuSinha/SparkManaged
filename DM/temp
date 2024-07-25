@@ -868,6 +868,8 @@ def find_differences(df1, df2, key_cols):
 diff_df = find_differences(df1_diff, df2_diff, key_columns)
 diff_df.show(truncate=False)
 
+### print column names
+
 same_columns_expr = concat_ws(", ", *[when(col(f"{col}_diff") == "Same", lit(col)).otherwise(lit(None)) for col in diff_cols])
     different_columns_expr = concat_ws(", ", *[when(col(f"{col}_diff") == "Different", lit(col)).otherwise(lit(None)) for col in diff_cols])
     
@@ -875,3 +877,7 @@ same_columns_expr = concat_ws(", ", *[when(col(f"{col}_diff") == "Same", lit(col
     diff_df = diff_df.withColumn("unmatched", different_columns_expr)
     
     return diff_df
+
+# Apply the function to the differences
+diff_df = find_differences(df1_diff, df2_diff, key_columns)
+diff_df.select(key_columns + ["matched", "unmatched"]).show(truncate=False)

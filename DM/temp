@@ -984,3 +984,28 @@ diff_df.show(truncate=False)
 # Create a message for rows that match but have different column values
 diff_message_df = diff_df.withColumn("diff_message", concat_ws(", ", *[when(col(f"df1.{col}") != col(f"df2.{col}"), lit(f"{col}: df1={col(f'df1.{col}')} != df2={col(f'df2.{col}')}")).otherwise(lit(None)) for col in common_cols]))
 diff_message_df.select("address", "building_id", "diff_message").show(truncate=False)
+
+
+from pyspark.sql import SparkSession
+
+# Get the SparkSession
+spark = SparkSession.builder.getOrCreate()
+
+# Get the Hadoop Configuration
+hadoop_conf = spark._jsc.hadoopConfiguration()
+
+# Get the FileSystem
+fs = org.apache.hadoop.fs.FileSystem.get(hadoop_conf)
+
+# Get the storage statistics
+stats = fs.getStats()
+print(f"Capacity: {stats.getCapacity()}")
+print(f"Used: {stats.getUsed()}")
+print(f"Remaining: {stats.getRemaining()}")
+
+# Convert bytes to a more readable format (e.g., GB)
+used_gb = stats.getUsed() / (1024 * 1024 * 1024)
+capacity_gb = stats.getCapacity() / (1024 * 1024 * 1024)
+
+print(f"Total storage used: {used_gb:.2f} GB")
+print(f"Total storage capacity: {capacity_gb:.2f} GB")

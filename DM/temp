@@ -1082,3 +1082,112 @@ df.write.saveAsTable("your_table_name")
 df.write.format("delta").saveAsTable("your_delta_table_name")
 
 
+###########################
+
+
+import csv
+import sys
+from signal import signal, SIGPIPE, SIG_DFL
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import lit
+
+# Prevents prematurely closed pipes from raising an exception in Python
+signal(SIGPIPE, SIG_DFL)
+
+# Allow large content in the dump
+csv.field_size_limit(sys.maxsize)
+
+# Initialize Spark session
+spark = SparkSession.builder.appName("SQLDumpToCSV").getOrCreate()
+
+def is_insert(line):
+    """
+    Returns true if the line begins a SQL insert statement.
+    """
+    return line.startswith('INSERT INTO') or False
+
+def get_values(line):
+    """
+    Returns the portion of an INSERT statement containing values
+    """
+    return line.partition('` VALUES ')[2]
+
+def values_sanity_check(values):
+    """
+    Ensures that values from the INSERT statement meet basic checks.
+    """
+    assert values
+    assert values[0] == '('
+    # Assertions have not been raised
+    return True
+
+def parse_values(values):
+    """
+    Given the raw values from a MySQL INSERT statement, convert to list of rows
+    """
+    latest_row = []
+    rows = []
+
+    reader = csv.reader([values], delimiter=',',
+                        doublequote=False,
+                        escapechar='\\',
+                        quotechar="'",
+                        strict=True)
+
+    for reader_row in reader:
+        for column in reader_row:
+            if len(column) == 0 or column == 'NULL':
+                latest_row.append(None)
+                continue
+            if column[0] == "(":
+                new_row = False
+                if len(latest_row) > 0 and latest_row[-1][-1] == ")":
+                    latest_row[-1] = latest_row[-1][:-1]
+                    new_row = True
+                if new_row:
+                    rows.append(latest_row)
+                    latest_row = []
+                if len(latest_row) == 0:
+                    column = column[1:]
+            latest_row.append(column)
+        if latest_row[-1][-2:] == ");":
+            latest_row[-1] = latest_row[-1][:-2]
+            rows.append(latest_row)
+
+    return rows
+
+def process_sql_file(file_path, output_path):
+    """
+    Process the SQL dump file and convert to CSV
+    """
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+
+    data = []
+    for line in lines:
+        if is_insert(line):
+            values = get_values(line)
+            if values_sanity_check(values):
+                rows = parse_values(values)
+                data.extend(rows)
+    
+    # Convert to Spark DataFrame
+    columns = [f"col_{i}" for i in range(len(data[0]))]
+    df = spark.createDataFrame(data, columns)
+    
+    # Save DataFrame as CSV
+    df.write.csv(output_path, header=True, mode='overwrite')
+
+def convert_sql_to_csv(file_path, output_path):
+    """
+    Main function to call for converting SQL to CSV
+    """
+    process_sql_file(file_path, output_path)
+    print(f"Data successfully converted and saved to {output_path}")
+
+# Example usage
+file_path = "/dbfs/mnt/mountname/your_sql_dump_file.sql"  # Path to your SQL dump file
+output_path = "/dbfs/mnt/mountname/output_csv_folder"    # Path to save the output CSV
+
+convert_sql_to_csv(file_path, output_path)
+

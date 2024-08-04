@@ -1191,3 +1191,53 @@ output_path = "/dbfs/mnt/mountname/output_csv_folder"    # Path to save the outp
 
 convert_sql_to_csv(file_path, output_path)
 
+#######################################################################################
+
+
+import sqlparse
+import pandas as pd
+from pyspark.sql import SparkSession
+
+# Initialize Spark session
+spark = SparkSession.builder.appName("SQLDumpToCSV").getOrCreate()
+
+# Define the path to the SQL dump file
+sql_dump_path = "/mnt/<your-mount-name>/path/to/your-dump.sql"
+
+# Function to process and save each table
+def process_table(statements, table_name):
+    table_data = []
+    for statement in statements:
+        if statement.get_type() == 'INSERT':
+            values = statement.tokens[-1].value
+            rows = sqlparse.sql.TokenList(sqlparse.parse(values)).tokens[1].tokens[1:]
+            for row in rows:
+                table_data.append(row.value.strip().strip('()').split(','))
+    
+    # Convert to DataFrame
+    df = pd.DataFrame(table_data)
+    
+    # Save DataFrame to CSV
+    df.to_csv(f"/dbfs/mnt/<your-mount-name>/{table_name}.csv", index=False)
+
+# Read the SQL dump file in chunks
+with open(sql_dump_path, 'r') as file:
+    chunk_size = 1024 * 1024 * 10  # 10 MB
+    sql_buffer = ""
+    table_name = ""
+    while chunk := file.read(chunk_size):
+        sql_buffer += chunk
+        statements = sqlparse.split(sql_buffer)
+        for statement in statements[:-1]:
+            parsed = sqlparse.parse(statement)[0]
+            if parsed.get_type() == 'CREATE':
+                table_name = parsed.get_name()
+            process_table(parsed, table_name)
+        sql_buffer = statements[-1]
+
+# Process the remaining buffer
+if sql_buffer:
+    parsed = sqlparse.parse(sql_buffer)[0]
+    process_table(parsed, table_name)
+
+

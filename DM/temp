@@ -1043,3 +1043,42 @@ dbutils.fs.mv(f"file://{local_temp_path}", dbfs_path)
 
 print(f"File moved to DBFS at {dbfs_path}")
 
+#############################################
+
+
+# Mount the file system if needed
+dbutils.fs.mount("source", "/mnt/mountname", "extraConfigs")
+
+# Path to the .sql file
+file_path = "/dbfs/mnt/mountname/your_sql_dump_file.sql"
+
+# Read the SQL file
+with open(file_path, 'r') as file:
+    sql_commands = file.read()
+
+# Split the SQL commands based on ';'
+sql_commands = sql_commands.split(';')
+
+# Remove any empty statements
+sql_commands = [cmd.strip() for cmd in sql_commands if cmd.strip()]
+
+# Execute SQL commands
+for command in sql_commands:
+    try:
+        spark.sql(command)
+    except Exception as e:
+        print(f"An error occurred while executing the command: {command}\nError: {str(e)}")
+
+# Load data into DataFrame
+df = spark.sql("SELECT * FROM your_table_name")
+
+# Display the DataFrame
+df.show()
+
+# Save the DataFrame to a Databricks table
+df.write.saveAsTable("your_table_name")
+
+# Or save it as a Delta table
+df.write.format("delta").saveAsTable("your_delta_table_name")
+
+

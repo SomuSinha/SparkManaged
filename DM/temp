@@ -1241,3 +1241,26 @@ if sql_buffer:
     process_table(parsed, table_name)
 
 
+
+
+
+import pandas as pd
+
+# Load the Excel file with all sheets
+file_path = 'your_excel_file.xlsx'
+xls = pd.read_excel(file_path, sheet_name=None)
+
+# Iterate through each sheet in the dictionary
+for sheet_name, df in xls.items():
+    # Trim leading and trailing whitespaces from string columns
+    xls[sheet_name] = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+# Save the cleaned data back to an Excel file
+cleaned_file_path = 'cleaned_excel_file.xlsx'
+with pd.ExcelWriter(cleaned_file_path) as writer:
+    for sheet_name, df in xls.items():
+        df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+print(f"Whitespace cleaned and saved to {cleaned_file_path}")
+
+

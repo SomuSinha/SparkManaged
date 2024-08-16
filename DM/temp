@@ -1264,3 +1264,30 @@ with pd.ExcelWriter(cleaned_file_path) as writer:
 print(f"Whitespace cleaned and saved to {cleaned_file_path}")
 
 
+
+
+import requests
+from pyspark.sql import SparkSession
+import pandas as pd
+
+# Initialize Spark session
+spark = SparkSession.builder.appName("AppInsightsToDatabricks").getOrCreate()
+
+app_id = "<YOUR_APP_ID>"
+api_key = "<YOUR_API_KEY>"
+query = "requests | limit 10"
+
+url = f"https://api.applicationinsights.io/v1/apps/{app_id}/query"
+headers = {"x-api-key": api_key}
+params = {"query": query}
+
+response = requests.get(url, headers=headers, params=params)
+data = response.json()["tables"][0]["rows"]
+
+# Convert data to pandas DataFrame and then to Spark DataFrame
+df = pd.DataFrame(data)
+spark_df = spark.createDataFrame(df)
+
+# Show the Spark DataFrame
+spark_df.show()
+

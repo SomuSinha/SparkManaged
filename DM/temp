@@ -1998,3 +1998,80 @@ df = get_data_in_chunks(query_template, period_start_date, period_end_date)
 # Display the DataFrame
 print(df)
 
+
+
+
+
+
+
+
+import requests
+import pandas as pd
+
+# Replace with your Application ID and API key
+app_id = "<YOUR_APP_ID>"
+api_key = "<YOUR_API_KEY>"
+
+# API URL for querying Application Insights
+api_url = f"https://api.applicationinsights.io/v1/apps/{app_id}/query"
+
+# Headers
+headers = {
+    "x-api-key": api_key,
+    "Content-Type": "application/json"
+}
+
+def fetch_app_insights_data(query, continuation_token=None):
+    """
+    Fetch data from Application Insights and handle pagination using the continuation token.
+    """
+    body = {
+        "query": query
+    }
+    if continuation_token:
+        body["continuationToken"] = continuation_token
+
+    response = requests.post(api_url, headers=headers, json=body)
+    response.raise_for_status()  # Raise an error for bad responses
+    return response.json()
+
+def get_data_in_chunks(query, max_records_per_chunk=10000):
+    """
+    Retrieves data in chunks based on the number of records and handles pagination.
+    """
+    all_data = []
+    continuation_token = None
+
+    while True:
+        data = fetch_app_insights_data(query, continuation_token)
+
+        if "tables" in data and data["tables"]:
+            columns = [col["name"] for col in data["tables"][0]["columns"]]
+            rows = data["tables"][0]["rows"]
+            all_data.extend(rows)
+
+        # Handle pagination using continuationToken
+        continuation_token = data.get("continuationToken")
+        if not continuation_token:
+            break
+
+        # Stop if we exceed the max_records_per_chunk
+        if len(all_data) >= max_records_per_chunk:
+            break
+
+    # Convert the collected data to a Pandas DataFrame
+    df = pd.DataFrame(all_data, columns=columns)
+    return df
+
+# Example usage
+query = """
+requests
+| limit 10000
+"""
+
+# Fetch data in chunks
+df = get_data_in_chunks(query, max_records_per_chunk=10000)
+
+# Display the DataFrame
+print(df)
+

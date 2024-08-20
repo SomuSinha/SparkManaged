@@ -1812,3 +1812,103 @@ requests
 
 fetch_data_for_period(query_template, period_start_date, period_end_date, chunk_size_days=30)
 
+#########
+
+import requests
+import pandas as pd
+from datetime import datetime, timedelta
+from pyspark.sql import SparkSession
+
+# Initialize Spark session
+spark = SparkSession.builder.appName("AppInsightsData").getOrCreate()
+
+# Replace with your connection string
+connection_string = "<YOUR_CONNECTION_STRING>"
+
+# Extract the endpoint from the connection string
+endpoint = connection_string.split("Endpoint=")[1].split(";")[0]
+api_url = f"{endpoint}/v1/apps/query"
+
+# Set up headers
+headers = {
+    "Content-Type": "application/json"
+}
+
+def fetch_app_insights_data(query, continuation_token=None):
+    body = {
+        "query": query
+    }
+    if continuation_token:
+        body["continuationToken"] = continuation_token
+
+    response = requests.post(api_url, headers=headers, json=body)
+    response.raise_for_status()  # Raise an exception for any failed requests
+
+    return response.json()
+
+def get_date_ranges(period_start_date, period_end_date, chunk_size_days=30):
+    ranges = []
+    while period_start_date < period_end_date:
+        next_end_date = period_start_date + timedelta(days=chunk_size_days)
+        if next_end_date > period_end_date:
+            next_end_date = period_end_date
+        ranges.append((period_start_date.isoformat(), next_end_date.isoformat()))
+        period_start_date = next_end_date
+    return ranges
+
+def fetch_data_for_period(query_template, period_start_date, period_end_date, chunk_size_days=30):
+    date_ranges = get_date_ranges(period_start_date, period_end_date, chunk_size_days)
+    data_chunks = []
+
+    for start_date, end_date in date_ranges:
+        query = query_template.format(start_date=start_date, end_date=end_date)
+        all_rows = []
+        continuation_token = None
+
+        while True:
+            data = fetch_app_insights_data(query, continuation_token)
+
+            if "tables" in data and data["tables"]:
+                if not all_rows:
+                    # Fetch column names from the first response
+                    columns = [col["name"] for col in data["tables"][0]["columns"]]
+                
+                # Collect the data rows
+                all_rows.extend(data["tables"][0]["rows"])
+
+            # Check for pagination (continuationToken)
+            if "continuationToken" in data:
+                continuation_token = data["continuationToken"]
+            else:
+                break
+
+        # Convert rows to a Pandas DataFrame and append to the Spark DataFrame
+        df_pandas = pd.DataFrame(all_rows, columns=columns)
+        df_spark = spark.createDataFrame(df_pandas)
+        data_chunks.append(df_spark)
+
+    # Combine all chunks into a single Spark DataFrame
+    if data_chunks:
+        final_df = data_chunks[0]
+        for chunk_df in data_chunks[1:]:
+            final_df = final_df.union(chunk_df)
+        
+        # Show the final Spark DataFrame
+        final_df.show()
+
+        # Optionally, save the DataFrame to a file or table for further analysis
+        final_df.write.format("delta").save("/mnt/app_insights_data")
+    else:
+        print("No data fetched.")
+
+# Example usage
+period_start_date = datetime.now() - timedelta(days=365)  # Configure this for the start of your period
+period_end_date = datetime.now()  # Configure this for the end of your period
+
+query_template = """
+union customEvents, traces, dependencies
+| where timestamp >= datetime({start_date}) and timestamp < datetime({end_date})
+| limit 500000
+"""
+
+fetch_data_for_period(query_template, period_start_date, period_end_date, chunk_size_days=30)

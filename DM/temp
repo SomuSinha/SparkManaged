@@ -1603,3 +1603,110 @@ df_spark.show()
 
 # Optionally, save the DataFrame to a file or table for further analysis
 df_spark.write.format("delta").save("/mnt/app_insights_data")
+
+
+##############
+
+
+import requests
+import pandas as pd
+from datetime import datetime, timedelta
+from pyspark.sql import SparkSession
+
+# Initialize SparkSession
+spark = SparkSession.builder.appName("AppInsightsData").getOrCreate()
+
+# Replace with your Application ID and API key
+app_id = "<YOUR_APP_ID>"
+api_key = "<YOUR_API_KEY>"
+
+# Define the base URL and headers for API requests
+url = f"https://api.applicationinsights.io/v1/apps/{app_id}/query"
+headers = {
+    "x-api-key": api_key
+}
+
+def fetch_data(query, start_date, end_date, continuation_token=None):
+    params = {
+        "query": query.format(start_date=start_date, end_date=end_date)
+    }
+    if continuation_token:
+        params["continuationToken"] = continuation_token
+
+    response = requests.get(url, headers=headers, params=params)
+    response.raise_for_status()  # Ensure we catch any HTTP errors
+    data = response.json()
+
+    return data
+
+def get_date_ranges(period):
+    now = datetime.now()
+    if period == "today":
+        return [(now.date().isoformat(), now.date().isoformat())]
+    elif period == "last_1_day":
+        start_date = now - timedelta(days=1)
+        return [(start_date.date().isoformat(), now.date().isoformat())]
+    elif period == "last_2_days":
+        start_date = now - timedelta(days=2)
+        return [(start_date.date().isoformat(), now.date().isoformat())]
+    elif period == "past_year":
+        start_date = now - timedelta(days=365)
+        return [(start_date.date().isoformat(), now.date().isoformat())]
+    else:
+        raise ValueError("Unsupported period")
+
+def process_data_for_range(start_date, end_date):
+    query = "requests | where timestamp >= datetime({start_date}) and timestamp < datetime({end_date})"
+    all_data = []
+    columns = None
+    continuation_token = None
+
+    while True:
+        data = fetch_data(query, start_date, end_date, continuation_token)
+        
+        if columns is None:
+            columns = [col["name"] for col in data["tables"][0]["columns"]]
+        
+        rows = data["tables"][0]["rows"]
+        all_data.extend(rows)
+        
+        if "continuationToken" in data:
+            continuation_token = data["continuationToken"]
+        else:
+            break
+
+    return all_data, columns
+
+# Define the period to fetch data for
+period = "past_year"  # Options: "today", "last_1_day", "last_2_days", "past_year"
+
+date_ranges = get_date_ranges(period)
+data_chunks = []
+
+for start_date, end_date in date_ranges:
+    # Fetch data in chunks and append to Spark DataFrame
+    chunk_data, columns = process_data_for_range(start_date, end_date)
+    
+    # Create a Pandas DataFrame for the current chunk
+    df_pandas = pd.DataFrame(chunk_data, columns=columns)
+    
+    # Convert Pandas DataFrame to Spark DataFrame
+    df_spark = spark.createDataFrame(df_pandas)
+    
+    # Append chunk to the Spark DataFrame
+    data_chunks.append(df_spark)
+
+# Combine all chunks into a single Spark DataFrame
+if data_chunks:
+    final_df = data_chunks[0]
+    for chunk_df in data_chunks[1:]:
+        final_df = final_df.union(chunk_df)
+    
+    # Show the final Spark DataFrame
+    final_df.show()
+
+    # Optionally, save the DataFrame to a file or table for further analysis
+    final_df.write.format("delta").save("/mnt/app_insights_data")
+else:
+    print("No data fetched.")
+

@@ -1364,3 +1364,79 @@ while True:
 
 print(f"Retrieved {len(all_data)} records.")
 
+##########################
+
+
+import requests
+from datetime import datetime, timedelta
+from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType, StructField, StringType, TimestampType
+
+# Initialize SparkSession
+spark = SparkSession.builder.appName("AppInsightsData").getOrCreate()
+
+# Application Insights details
+app_id = "<YOUR_APP_ID>"
+api_key = "<YOUR_API_KEY>"
+url = f"https://api.applicationinsights.io/v1/apps/{app_id}/query"
+headers = {
+    "x-api-key": api_key
+}
+
+def fetch_data_for_range(start_date, end_date):
+    query = f"requests | where timestamp >= datetime({start_date}) and timestamp < datetime({end_date})"
+    params = {"query": query}
+    all_rows = []
+
+    while True:
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()
+        data = response.json()
+
+        # Retrieve column names and rows
+        columns = [col["name"] for col in data["tables"][0]["columns"]]
+        rows = data["tables"][0]["rows"]
+        all_rows.extend([dict(zip(columns, row)) for row in rows])
+
+        # Check for continuation token if applicable
+        if "continuationToken" in data:
+            params["continuationToken"] = data["continuationToken"]
+        else:
+            break
+
+    return all_rows, columns
+
+# Define the date range (1 year broken into smaller intervals)
+start_date = datetime.now() - timedelta(days=365)
+chunk_size = 30  # 30 days intervals
+data_chunks = []
+columns = None
+
+while True:
+    interval_start = start_date
+    interval_end = start_date + timedelta(days=chunk_size)
+    if interval_end > datetime.now():
+        interval_end = datetime.now()
+
+    chunk_data, chunk_columns = fetch_data_for_range(interval_start.isoformat(), interval_end.isoformat())
+    if not chunk_data:
+        break
+
+    if columns is None:
+        columns = chunk_columns
+
+    data_chunks.extend(chunk_data)
+    start_date = interval_end
+
+    if interval_end >= datetime.now():
+        break
+
+# Define schema based on columns
+schema = StructType([StructField(col, StringType(), True) for col in columns])
+
+# Convert data to Spark DataFrame
+df = spark.createDataFrame(data_chunks, schema=schema)
+
+# Show DataFrame
+df.show()
+

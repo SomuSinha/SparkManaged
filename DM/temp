@@ -1327,3 +1327,40 @@ formatted_data = [dict(zip(columns, row)) for row in rows]
 # Print the structured data
 for item in formatted_data:
     print(item)
+
+
+
+
+import requests
+
+app_id = "<YOUR_APP_ID>"
+api_key = "<YOUR_API_KEY>"
+query = "requests | where timestamp >= ago(7d)"
+
+url = f"https://api.applicationinsights.io/v1/apps/{app_id}/query"
+headers = {
+    "x-api-key": api_key
+}
+params = {
+    "query": query
+}
+
+all_data = []
+
+while True:
+    response = requests.get(url, headers=headers, params=params)
+    data = response.json()
+
+    # Retrieve and store the data
+    columns = [col["name"] for col in data["tables"][0]["columns"]]
+    rows = data["tables"][0]["rows"]
+    all_data.extend([dict(zip(columns, row)) for row in rows])
+
+    # Check for continuation token
+    if "continuationToken" in data:
+        params["continuationToken"] = data["continuationToken"]
+    else:
+        break
+
+print(f"Retrieved {len(all_data)} records.")
+

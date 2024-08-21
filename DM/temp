@@ -2513,3 +2513,89 @@ def fetch_paginated_data(query, url, headers):
 
 # Fetch data
 all_data = fetch_paginated_data(query, url, headers)
+
+
+##############################
+##############################
+
+
+
+
+To pull large amounts of Application Insights data into Databricks using Azure Monitor, you can do so via the Azure Monitor REST API or the Azure SDK. Here’s how you can achieve this using a connection string in Python.
+
+Step 1: Set Up the Environment in Databricks
+Install the required libraries:
+
+You’ll need to install the azure-monitor-query library to interact with Azure Monitor and Application Insights.
+
+python
+Copy code
+%pip install azure-monitor-query
+Step 2: Retrieve Data from Application Insights Using the Azure Monitor SDK
+Here's an example code snippet:
+
+python
+Copy code
+from azure.monitor.query import LogsQueryClient
+from azure.identity import DefaultAzureCredential
+from azure.monitor.query import LogsQueryStatus
+
+# Replace with your connection string
+connection_string = "<YOUR_CONNECTION_STRING>"
+
+# Authenticate using DefaultAzureCredential (you can use other credentials as per your setup)
+credential = DefaultAzureCredential()
+client = LogsQueryClient(credential)
+
+# Specify the query and the Application Insights workspace ID
+query = """
+requests
+| where timestamp > ago(1d)
+| summarize count() by bin(timestamp, 1h)
+"""
+workspace_id = "<YOUR_WORKSPACE_ID>"
+
+# Execute the query
+response = client.query_workspace(
+    workspace_id=workspace_id,
+    query=query,
+    timespan="P1D"  # The timespan can be dynamic (e.g., P1D for the last day)
+)
+
+if response.status == LogsQueryStatus.SUCCESS:
+    # Parse the data
+    data = response.tables
+    for table in data:
+        for row in table.rows:
+            print(row)
+else:
+    print(f"Query failed: {response.error.code} - {response.error.message}")
+Step 3: Handling Large Datasets with Pagination
+For large datasets, you may need to chunk the data and retrieve it in multiple iterations. You can achieve this by querying the data in smaller time windows or batching the results.
+
+Step 4: Load Data into a Spark DataFrame
+You can convert the retrieved data into a Pandas DataFrame and then load it into a Spark DataFrame for further processing.
+
+python
+Copy code
+import pandas as pd
+from pyspark.sql import SparkSession
+
+# Example: Convert the response to a Pandas DataFrame
+columns = [col.name for col in response.tables[0].columns]
+data = [dict(zip(columns, row)) for row in response.tables[0].rows]
+
+# Convert to Pandas DataFrame
+df = pd.DataFrame(data)
+
+# Convert to Spark DataFrame
+spark_df = SparkSession.builder.getOrCreate().createDataFrame(df)
+
+# Display the data
+spark_df.show()
+Additional Considerations
+Dynamic Time Ranges: To filter data dynamically (e.g., past year, last week), modify the timespan and query parameters accordingly. You can also use date functions like ago(1d) or bin(timestamp, 1h) in your Kusto query.
+
+Connection String Handling: If you prefer using a connection string directly, consider setting up a service principal with the connection string or using a managed identity.
+
+This setup should allow you to pull large amounts of data from Application Insights into Databricks using a connection string.

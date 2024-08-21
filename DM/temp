@@ -2475,3 +2475,41 @@ Handling Large Data Volumes:
 
 The script collects data in chunks based on the record count and dynamically handles large volumes by continuously fetching additional data until the desired number of records is reached.
 This approach ensures that you handle large volumes of data by focusing on the total number of records, allowing for more flexible and scalable data retrieval.
+
+#######################################
+#######################################
+
+
+import requests
+import json
+
+url = "https://api.applicationinsights.io/v1/apps/{app_id}/query"
+api_key = "YOUR_API_KEY"
+headers = {"x-api-key": api_key}
+query = "<YOUR_QUERY>"
+
+def fetch_paginated_data(query, url, headers):
+    results = []
+    continuation_token = None
+
+    while True:
+        payload = {
+            "query": query,
+        }
+        if continuation_token:
+            payload["continuationToken"] = continuation_token
+
+        response = requests.post(url, headers=headers, json=payload)
+        data = response.json()
+
+        if "tables" in data:
+            results.extend(data["tables"][0]["rows"])
+        
+        continuation_token = data.get("continuationToken")
+        if not continuation_token:
+            break
+
+    return results
+
+# Fetch data
+all_data = fetch_paginated_data(query, url, headers)

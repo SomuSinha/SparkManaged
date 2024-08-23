@@ -2599,3 +2599,30 @@ Dynamic Time Ranges: To filter data dynamically (e.g., past year, last week), mo
 Connection String Handling: If you prefer using a connection string directly, consider setting up a service principal with the connection string or using a managed identity.
 
 This setup should allow you to pull large amounts of data from Application Insights into Databricks using a connection string.
+
+#########################################
+#########################################
+
+
+
+# Configuration
+storage_account_name = "mystorageaccount"
+storage_account_key = "mykey"
+
+spark.conf.set(
+    f"fs.azure.account.key.{storage_account_name}.blob.core.windows.net",
+    storage_account_key
+)
+
+# Reading Data
+container_name = "mycontainer"
+file_path = f"wasbs://{container_name}@{storage_account_name}.blob.core.windows.net/data/input.csv"
+
+df = spark.read.csv(file_path, header=True, inferSchema=True)
+
+# Transform Data (example)
+df_transformed = df.filter(df["column_name"] > 100)
+
+# Writing Data
+output_path = f"wasbs://{container_name}@{storage_account_name}.blob.core.windows.net/data/output.csv"
+df_transformed.write.csv(output_path, mode="overwrite", header=True)

@@ -2626,3 +2626,17 @@ df_transformed = df.filter(df["column_name"] > 100)
 # Writing Data
 output_path = f"wasbs://{container_name}@{storage_account_name}.blob.core.windows.net/data/output.csv"
 df_transformed.write.csv(output_path, mode="overwrite", header=True)
+
+#####################
+
+total_lifetime_days = 90
+ 
+# Convert TTL to days    
+ttl_in_days = ttl_in_seconds / 86400
+ 
+# Calculate elapsed days since creation    
+elapsed_days = total_lifetime_days - ttl_in_days     
+ 
+# Calculate the creation date 
+ 
+creation_date = datetime.now() - timedelta(days=elapsed_days)

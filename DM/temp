@@ -2640,3 +2640,33 @@ elapsed_days = total_lifetime_days - ttl_in_days
 # Calculate the creation date 
  
 creation_date = datetime.now() - timedelta(days=elapsed_days)
+
+########
+
+
+import pandas as pd
+from sqlalchemy import create_engine
+
+# Set up the connection to the source SQL Server
+source_connection_string = "mssql+pyodbc://username:password@source_server/database_name?driver=ODBC+Driver+17+for+SQL+Server"
+source_engine = create_engine(source_connection_string)
+
+# Set up the connection to the destination SQL Server
+destination_connection_string = "mssql+pyodbc://username:password@destination_server/database_name?driver=ODBC+Driver+17+for+SQL+Server"
+destination_engine = create_engine(destination_connection_string)
+
+# Define the query to fetch data from the source SQL Server
+query = "SELECT * FROM your_source_table"
+
+# Read data in batches from the source and write to the destination
+batch_size = 10000  # Adjust batch size as needed
+
+with source_engine.connect() as source_conn, destination_engine.connect() as dest_conn:
+    # Use pandas' read_sql_query with chunksize to read data in batches
+    for chunk in pd.read_sql_query(query, source_conn, chunksize=batch_size):
+        # Append the data to the destination table
+        chunk.to_sql('your_destination_table', dest_conn, if_exists='append', index=False)
+        print(f"Batch of size {len(chunk)} inserted successfully.")
+
+print("Data migration completed successfully.")
+

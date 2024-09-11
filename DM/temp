@@ -2728,3 +2728,35 @@ if __name__ == "__main__":
     main()
 
 
+###################################
+###################################
+
+
+# Example: Notebook to scale the cluster
+from databricks_api import DatabricksAPI
+import os
+
+# Fetch the cluster ID from an environment variable or use a hard-coded ID
+CLUSTER_ID = dbutils.widgets.get("cluster_id")  # Add a widget for the cluster ID if needed
+
+# Set the new node type
+NEW_NODE_TYPE = "Standard_DS4_v2"
+
+# Initialize the DatabricksAPI client
+databricks_host = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiUrl().get()
+databricks_token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()
+db = DatabricksAPI(host=databricks_host, token=databricks_token)
+
+# Function to change the cluster node type
+def change_cluster_node_type(cluster_id, new_node_type):
+    # Update the cluster configuration
+    cluster_config = db.cluster.get_cluster(cluster_id)
+    cluster_config['node_type_id'] = new_node_type
+    cluster_config['driver_node_type_id'] = new_node_type
+    db.cluster.edit_cluster(cluster_id, cluster_config)
+    print(f"Cluster {cluster_id} node type changed to {new_node_type}")
+
+# Change the cluster node type
+change_cluster_node_type(CLUSTER_ID, NEW_NODE_TYPE)
+
+

@@ -2670,3 +2670,61 @@ with source_engine.connect() as source_conn, destination_engine.connect() as des
 
 print("Data migration completed successfully.")
 
+##############################################################################################################
+##############################################################################################################
+
+
+
+import requests
+
+# Databricks configuration
+DATABRICKS_INSTANCE = "<databricks-instance>"  # Example: "adb-1234567890123456.7.azuredatabricks.net"
+DATABRICKS_TOKEN = "<DATABRICKS_TOKEN>"  # Your Databricks Personal Access Token
+CLUSTER_ID = "<CLUSTER_ID>"  # Your Databricks Cluster ID
+
+# Function to get the number of records in a DataFrame
+def get_dataframe_size(df):
+    return df.count()
+
+# Function to change the Databricks node type
+def change_cluster_node_type(cluster_id, new_node_type):
+    url = f"https://{DATABRICKS_INSTANCE}/api/2.0/clusters/edit"
+    headers = {
+        "Authorization": f"Bearer {DATABRICKS_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    # Edit cluster configuration with the new node type
+    data = {
+        "cluster_id": cluster_id,
+        "node_type_id": new_node_type,
+        "driver_node_type_id": new_node_type
+    }
+    response = requests.post(url, headers=headers, json=data)
+    
+    # Check response status
+    if response.status_code == 200:
+        print("Cluster node type updated successfully.")
+    else:
+        print(f"Failed to update cluster node type: {response.status_code} - {response.text}")
+
+# Main function to check DataFrame size and update cluster
+def main():
+    # Replace this with your actual DataFrame
+    df = spark.read.csv("/path/to/data")  # Example DataFrame loading
+    record_count = get_dataframe_size(df)
+    
+    print(f"Number of records in the DataFrame: {record_count}")
+    
+    # Check if record count exceeds 5,000,000
+    if record_count > 5000000:
+        print("Data size exceeds 5,000,000 records. Changing the cluster node type.")
+        # Define the new node type (e.g., "Standard_DS4_v2" for more resources)
+        new_node_type = "Standard_DS4_v2"
+        change_cluster_node_type(CLUSTER_ID, new_node_type)
+    else:
+        print("Data size is within acceptable limits. No change to cluster node type is necessary.")
+
+if __name__ == "__main__":
+    main()
+
+

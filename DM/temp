@@ -2760,3 +2760,45 @@ def change_cluster_node_type(cluster_id, new_node_type):
 change_cluster_node_type(CLUSTER_ID, NEW_NODE_TYPE)
 
 
+
+import requests
+from io import StringIO
+import pandas as pd
+from pyspark.sql import SparkSession
+
+# Initialize Spark session
+spark = SparkSession.builder \
+    .appName("Read Append Blob") \
+    .getOrCreate()
+
+# Define your parameters
+storage_account_name = '<your-storage-account-name>'
+container_name = '<your-container-name>'
+blob_name = '<your-append-blob-name>'
+storage_account_key = '<your-storage-account-key>'
+
+# Set the Spark configuration for accessing Azure Blob Storage
+spark.conf.set(f"fs.azure.account.key.{storage_account_name}.blob.core.windows.net", storage_account_key)
+
+# Construct the URL to the append blob
+url = f"https://{storage_account_name}.blob.core.windows.net/{container_name}/{blob_name}"
+
+# Make the request to read the append blob
+response = requests.get(url, headers={
+    "x-ms-version": "2019-02-02",  # Specify the version of the API
+    "Authorization": f"Bearer {storage_account_key}"  # Use the account key for authorization
+})
+
+# Check if the request was successful
+if response.status_code == 200:
+    # Assuming the blob contains CSV data, convert it to a DataFrame
+    data = StringIO(response.text)
+    df = pd.read_csv(data)
+    spark_df = spark.createDataFrame(df)
+    
+    # Show the DataFrame
+    spark_df.show()
+else:
+    print(f"Error reading blob: {response.status_code} {response.text}")
+
+

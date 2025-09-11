@@ -1,0 +1,250 @@
+1> Order of Execution 
+
+select t2.name, count(*) cnt 
+from tbl1 t1 
+join tbl2 t2 on t1.id = t2.id 
+where t1.id in (4, 5)
+group by t2.name
+having count(*) > 1
+order by cnt 
+limit 10 
+
+
+from join 
+where 
+group by having 
+select 
+order by limit 
+
+2> How would you deal with this . Count the number of tweets from the Data 
+
+[
+{
+"id" : 1,
+"tweets" : "#Fun #Epam #Friday"
+},
+{
+"id" : 2,
+"tweets" : "#Epam #HR"
+},
+,
+{
+"id" : 3,
+"tweets" : "#Friday #Epam"
+}
+]
+
+
+df1 = df.select("id", f.expr("explode(split(tweets,'#')) as val"))
+df1.groupBy("tweets").agg(f.expr("count(*) as cnt"))
+df.show(7)
+
+
+with temp as 
+(select id, split(col,' ') as tweets from tbl )
+select tweets, count(*) 
+group by tweets; 
+
+3> Python OOP (Decorators)
+
+
+def HigherOrderFunction(fn):
+    def LowerOrderFunction(*args, **kwargs):
+        import time
+        t1 = time.time()  # Record start time
+        res = fn(*args, **kwargs)
+        t2 = time.time()  # Record end time
+        print(f"Time taken is {t2 - t1} seconds")
+        return res
+    return LowerOrderFunction
+
+@HigherOrderFunction
+def some_function():
+    # Simulate some work (e.g., sleep for 2 seconds)
+    time.sleep(2)
+
+# Calling the function
+some_function()
+
+
+4>  SQL question 
+
+
+tbl
+---
+upc  company  price
+101 - amazon - $10.99
+101 - walmart - $12.46
+110 - walmart - $13.05
+102 - amazon - $4.00
+
+upc  amazon_price  walmart_price
+101   $10.99        $12.46
+110    NA           $13.05
+102   $4.00         NA 
+
+select a.upc,a.location,b.location,a.price as "price at amazon",b.price as "price at walmart"
+from 
+(select distinct * from tbl where lower(location)='amazon') a join 
+(select distinct * from tbl where lower(location)='walmart') b on coalesce(a.upc,'upc')=coalesce(b.upc,'upc');
+
+
+select
+    quiz,
+    max(case wen name = 'Andy' then score end) Andy,
+    max(case wen name = 'Drew' then score end) Drew,
+    max(case wen name = 'Mark' then score end) Mark,
+    max(case wen name = 'Sam'  then score end) Sam
+from mytable
+group by quiz
+
+
+5> Skewness
+
+df.groupBy(f.expr("spark_partition_id()")).agg(f.expr("count(*) as cnt"))
+
+
+# salting earlier for skewness
+# when key is skewed
+
+df1 = df.withColumn("salt_key", f.expr("concat(primary_col, rand())"))
+df1.repartiton(10, salt_key)
+
+1> Adaptive query execution :- coalesce skewed partitition, not required salting now , try to change sort merge join to broadcast hash join 
+2> Dynamic partition pruning:- triggered by partitionBy, bucketBy , unnecessary partitions are pruned, ignored in run time 
+3> Query pushdown:- order of sql query , first on, join, then wide tranformation like group by, then narrow like select, then order limit 
+4> cache, persist, repartition:- cache in memory, if reusing multiple time dataframe , or hitting too many actions, but a hint, not a guarantee, 
+pushed out based on least recently used , repartitioon is costly, must be on column with medium cardiniality else too many unneccessary partition if cardinality high (so many repeated values) and pressure on namenode or too skewed parition if less cardinality (too few values).
+5> spark memory management:- driver memory+pyspark memory , executor memory (reserved memory+tranformation and cache memory (handle the limit well, controlled by parameter else OOM), 
+user defined function memory) + pyspark memory (for python workers)
+6> JDBC optimizations :- set lower bound upper bound, only one executor make connections, but launch parallel thread  
+7> Broadcast variable and joins:- if dataframe/variable si small enough, copy to all executors to avoid network shuffle (efault 10 MB, can be altered, max size 8 GB)
+8> spark sepculative execution:- if process is running slow then run on other worker to check if fast 
+9> spark dynamic resource allocation:- if very long process, run small processes fast, dynamically allocate resources.
+
+6> Databricks, types of Clusters, How a query is executed in databricks
+
+
+7> Delta Model, What will be the design considerations ? 
+
+How will you find which records are delta , key is id 
+
+history 
+
+id property address
+1   abc
+2   cde
+3   bde 
+
+new 
+
+id property address
+1   def
+2   cde
+5   klm 
+
+final  
+
+id property address
+1   def
+2   cde
+3   bde 
+5   klm  
+
+
+jobs:- number of actions 
+stages:- number of wide transfromation (invlove more than 1 row, join, group by, network shuffle), multiple stages talk via stage buffer, can be parallel or sequential 
+tasks:- narrow transformation(select, where in parallel)
+
+
+
+hdfs, azure , s3 data is already distributed , each worker node one or many partitions of file, also copy in other nodes 
+but these chunks are in disk actually 
+spark lazily will load the partition in memory and call as rdd , example 4 rdd partitions, then 4 tasks, now it sees the program
+narrow transformation like filter , select (narrow transformation) in one task , and execute them in parallel in computers
+now these tasks are logically grouped under some stage, lets say, we need group by or join (wide transformation) 
+and we need data from multiple computers memory so they are handled by stages, the also shuffle the data and talk with each other with stage buffer 
+jobs trigger the construction of these execution plans by analysing the rdd lineage when an action like count, show is invoked, so dont execute so many , it will 
+unnecessarily load dags in memory with data   
+once all jobs are finished spark application is finished
+many action so many job hence many execution plans, data loaded in memory sperately per job, until cached (this is also not guarantee), 
+multiple times same data may be loaded in memory , create network traffic and resource issue will be there 
+so if hitting so many action or calculation df in a loop , use cache, it is costly , also remember to uncache
+
+
+7> "How do you approach designing data models differently for transactional systems (OLTP) versus analytical systems (OLAP), and what are some of the key challenges you’ve faced when ensuring both systems can efficiently interact with a shared data source?"
+
+
+
+"In designing data models for transactional systems (OLTP) versus analytical systems (OLAP), the primary difference lies in their respective goals and requirements.
+
+For transactional systems, the focus is on efficiency, data integrity, and ensuring fast, real-time updates to support day-to-day operations. The data model is typically normalized to minimize redundancy and avoid data anomalies. This ensures consistency, accuracy, and quick write operations. An example would be designing tables that focus on transactions, with constraints and foreign keys to maintain relationships between entities.
+
+On the other hand, analytical systems are optimized for reading and analyzing large volumes of data rather than frequent updates. Data models for OLAP systems are usually denormalized to allow for faster queries and reporting, often using star or snowflake schemas. This means data is aggregated and stored in a way that allows quick retrieval, typically at the cost of some data redundancy.
+
+One of the key challenges in ensuring these systems interact efficiently is managing data integration. Often, data from transactional systems needs to be transformed into a format that suits the needs of analytical systems. This could involve ETL (Extract, Transform, Load) processes where the normalized data from OLTP systems is transformed into a format that can be ingested by OLAP systems. Ensuring that data integrity is maintained while optimizing for performance in both systems can be tricky. Additionally, keeping the two systems synchronized and ensuring that the transformation process doesn’t lead to inconsistencies or data loss is a challenge I’ve encountered.
+
+Ultimately, the success of integrating both systems comes down to careful planning and continuous monitoring of data quality, performance, and scalability."
+
+
+Denormalization and normalization are two important concepts in database design, and they serve different purposes based on the requirements of the system. Here's a breakdown of the differences:
+
+Normalization:
+Normalization is the process of organizing data in a way that reduces redundancy and dependency by dividing the data into related tables. The goal is to ensure that each piece of data is stored only once, which reduces the chances of anomalies during data operations (inserts, updates, deletes).
+
+Key Characteristics of Normalization:
+Data Integrity: Ensures that data is accurate and consistent.
+Reduced Redundancy: Data is split across multiple tables to eliminate duplicate information.
+Increased Complexity: More tables and relationships, which can lead to complex queries.
+Write Efficiency: Normalized databases perform well on write-heavy operations since there’s less data duplication.
+Example: A customer’s order might be in two tables: one for customer details and another for order details. The customer table contains the customer information, while the order table only stores a reference to the customer ID.
+Types of Normal Forms (1NF, 2NF, 3NF):
+1NF (First Normal Form): Eliminate repeating groups; each field must contain only one value.
+2NF (Second Normal Form): Remove partial dependencies (non-key attributes should depend on the whole primary key).
+3NF (Third Normal Form): Remove transitive dependencies (non-key attributes should not depend on other non-key attributes).
+
+
+Comparison: Star vs Snowflake Schema
+Aspect	Star Schema	Snowflake Schema
+Structure	Central fact table, directly linked to dimension tables	Central fact table, dimension tables normalized into multiple related tables
+Normalization	Denormalized dimension tables	Normalized dimension tables
+Complexity	Simple and easy to understand	More complex due to additional tables and relationships
+Query Performance	Faster query performance (due to fewer joins)	Slower query performance (due to more joins)
+Data Redundancy	Higher redundancy in dimension tables	Lower redundancy in dimension tables
+Storage Efficiency	Less efficient in terms of storage	More efficient in terms of storage (due to normalization)
+Design Time	Faster to design and implement	Requires more time to design and implement
+Use Case	Best for reporting and quick analysis	Best for detailed data analysis and when data integrity is a priority
+Example	Ideal for OLAP (Online Analytical Processing) applications with fast read operations	Ideal for systems where data integrity and storage efficiency are prioritized
+
+
+
+
+
+j = '{"id":123, 'tweets':'some#tweet#some'}'
+
+import json 
+d = json.loads(j)
+tweets = d['tweets'].split('#')
+d={}
+for ele in tweets:
+  if ele not in d.keys():
+    d[ele]=1
+  else:
+    d[ele]=d[ele]+1
+print(d)
+
+
+library installation management 
+Job cluster or Automated
+Config Files management
+Data Archival
+Scheduling and Control
+Container mounting
+How to list container files in databricks, if no direct access to container 
+Used Init Scripts
+How do maintain code CICD
+Error handling, Data Check, Layers
+
+
+
+You still use Azure containers for the actual file storage — Unity Catalog sits on top of them to provide governance, discoverability, security, and consistency across teams and workspaces.

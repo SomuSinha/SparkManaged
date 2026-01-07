@@ -78,6 +78,20 @@ union all
 select t.* from target t
 left join stage s on t.id=s.id where s.id is null
 
+
+--new not in old
+select s.* from stage s
+left join target t on s.id=t.id and s.name = t.name when t.id is null
+union all 
+--old not in new
+select t.* from target t
+left join stage s on t.id=s.id where s.id is null
+union all
+--common in both
+select s.* from stage s
+join target t on s.id=t.id and s.name = t.name
+	
+
 select coalesce(s.col1, t.col1), coalesce(s.col2, t.col2)
 from stage1 s
 full outer join target t on s.id = t.id and coalesce(s.name, 'name')=coalesce(t.name, 'name')
@@ -540,3 +554,4 @@ upc = ltrim(upc, 0)
 where 
 (product_set_member.sku <> stage.sku or 
 product_set_member.upc <> stage.upc) and active_flag=True
+

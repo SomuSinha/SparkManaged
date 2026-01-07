@@ -233,6 +233,7 @@ select * from temp where rnk1 > 1 and rnk2 > 1
 select dense_rank() over (partition by id, name order case when 'inisight' then 1 else 0 end) rnk 
 from tbl 
 
+--combine	
 --union 
 --union all 
 
@@ -240,9 +241,13 @@ from tbl
 --common 
 --insersect
 
-
+--difference
 --except 
 --minus 
+
+select id, name from tbl
+except 
+select id, name from tbl2
 
 --where property id is same but address changed
 select t1.*
@@ -554,4 +559,5 @@ upc = ltrim(upc, 0)
 where 
 (product_set_member.sku <> stage.sku or 
 product_set_member.upc <> stage.upc) and active_flag=True
+
 

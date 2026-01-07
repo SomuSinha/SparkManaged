@@ -538,5 +538,5 @@ set
 sku = ltrim(sku, 0),
 upc = ltrim(upc, 0)
 where 
-product_set_member.sku <> stage.sku or 
-product_set_member.upc <> stage.upc
+(product_set_member.sku <> stage.sku or 
+product_set_member.upc <> stage.upc) and active_flag=True

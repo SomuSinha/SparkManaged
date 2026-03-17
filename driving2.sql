@@ -211,7 +211,7 @@
 3> In case of turbo charged engines a turbocharger is placed in the engine to compress the natural air , increase it temperate and forcibly pushed using Gasoline direct injection. This allows
 more power and Torque to be produced to very high combustion
 4> However the turbo engines need to be rotated at high RPMs to compress the natural air
-5> An engine completes a full cycle in 270 degrees, so a 4 cylinder have 270/4 when a power is delivered and a 3 cylinder will have 270/3 when power is delivered. so there is a zone in 3 cylinders (60 degree gap)
+5> An engine completes a full cycle in 720° degrees, so a 4 cylinder have 4-cylinder firing interval = 180° when a power is delivered and a 3 cylinder will have 3-cylinder = 240° when power is delivered. so there is a zone in 3 cylinders (60 degree gap)
 when there is no power delivery, hence the vibration, so in 4 cylinder the cylinders are at opposite sides cancelling the net motion but in 3 cylinder units a balancer is required.
 6> Now to deliever the engine power to wheels Gears are used 
 7> They are continous circular units in a sequence : biggest, bigger, big, small

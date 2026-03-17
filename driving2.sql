@@ -203,7 +203,33 @@
 --multiple permutations, combinations , by the great God
 
 
+/* Engine Knowledge
+----------------
 
+1> The Car is composed of cylinders in the engine bay where actual fuel is burnt
+2> the fuel is mixed with naturaly aspirated air to produce a combunstion using a spark plug in petrol engine
+3> In case of turbo charged engines a turbocharger is placed in the engine to compress the natural air , increase it temperate and forcibly pushed using Gasoline direct injection. This allows
+more power and Torque to be produced to very high combustion
+4> However the turbo engines need to be rotated at high RPMs to compress the natural air
+5> An engine completes a full cycle in 270 degrees, so a 4 cylinder have 270/4 when a power is delivered and a 3 cylinder will have 270/3 when power is delivered. so there is a zone in 3 cylinders (60 degree gap)
+when there is no power delivery, hence the vibration, so in 4 cylinder the cylinders are at opposite sides cancelling the net motion but in 3 cylinder units a balancer is required.
+6> Now to deliever the engine power to wheels Gears are used 
+7> They are continous circular units in a sequence : biggest, bigger, big, small
+8> They are mated to a small circular unit via gear Knob.
+9> The biggest circle produces the highest RPM and lowest Speed as the gear circular selector needs to rotate many a times to complete one full circle of the biggest gear Circle. Hence it would burn more fuel 
+as well to produce that highest RPM. on a contrast the gear circular selector would complete the smallest gear one complete rotation very quickly , hence highest speed and lowest RPM. Higher the RPM, higher the 
+Torque due to Force * Perpendicular distance 
+10> At higher gear also more RPM can be attained but need more accelerator , but would lead to more fuel burning again, so more fuel can be saved if high gear and low speed balance. Very low speed also lead to 
+stall hence a balanced speed is needed
+11> The lowest gear has the highest torque and lowest power and highest gear and lowest torque and highest power 
+12> The turbo engines have a turbo lag till 1500-2000 RPM, beyond which it attains the highest peak torque , much early than a naturally aspirated engine, and hold the torque in a linear graph. So to rotate the engine at 
+high RPM, a turbo would want to get a lower gear engaged. The naturally aspirated engine attains the highest torque at a much higher RPM
+13> A clutch circular flywheel connects the engine-gear box inputs to wheels, which is disconnected when clutch is fully pressed, but may need to slip longer until ready to give the accelerator required by the gear.
+14> Petrol engines are hotter so soot is essentially burnt without need of any excess speed like is diesel vehicle and diesel particulate flter is not required
+15> Turbo would need the turbo charger to be ready , before it runs at full speed , so engine heating and idling for 30 secs in needed, so that its properly lubricated 
+16> Turbo lag is not intentional; it is an inherent physical characteristic of turbocharged engines, not a deliberate design feature. 
+It occurs because turbochargers require time for exhaust gases to build up pressure and spool up the turbine to create boost. 
+17> A continous variable transmission can attain gear ratios in similar manner as above using conical vessels and a band. But hence have a rubber band effect.*/
 
 
 --Scooter 

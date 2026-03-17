@@ -229,7 +229,18 @@ high RPM, a turbo would want to get a lower gear engaged. The naturally aspirate
 15> Turbo would need the turbo charger to be ready , before it runs at full speed , so engine heating and idling for 30 secs in needed, so that its properly lubricated 
 16> Turbo lag is not intentional; it is an inherent physical characteristic of turbocharged engines, not a deliberate design feature. 
 It occurs because turbochargers require time for exhaust gases to build up pressure and spool up the turbine to create boost. 
-17> A continous variable transmission can attain gear ratios in similar manner as above using conical vessels and a band. But hence have a rubber band effect.*/
+17> A continous variable transmission can attain gear ratios in similar manner as above using conical vessels and a band. But hence have a rubber band effect.
+18> Gears don’t create power — they trade torque for speed.
+19> Turbo engines: Produce peak torque at lower RPM Maintain a flatter torque curve
+    Naturally aspirated engines: Reach peak torque at higher RPM
+20> Naturally Aspirated vs Turbocharged Engines
+In a naturally aspirated engine, air enters the engine due to atmospheric pressure.
+In a turbocharged engine, a turbocharger uses exhaust gases to spin a turbine, which compresses incoming air.
+More compressed air = more oxygen
+More oxygen = more fuel can be burned
+This produces higher power and torque
+Compression heats the air, so engines often use an intercooler to cool it before combustion.
+*/
 
 
 --Scooter 

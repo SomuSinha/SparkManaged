@@ -241,6 +241,11 @@ More compressed air = more oxygen
 More oxygen = more fuel can be burned
 This produces higher power and torque
 Compression heats the air, so engines often use an intercooler to cool it before combustion.
+
+
+GDI (Gasoline direct injection) higher power and superior fuel economy, fuel is directly sprayed in the combustion chamber. prone to carbon build up. Need standard fuel with high octane.Less turbo lag. as eben before turbo kicks in 
+the sprayed fuel absorbs heat from cylinder and cools to have high compression ratio
+MPFI (Multi-port fuel injection) fuel is sprayed in intake manifold before it enters the chamber. More consistent and smoother operation at lower ends. More reliable. More tolerant.
 */
 
 

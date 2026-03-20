@@ -233,6 +233,7 @@ It occurs because turbochargers require time for exhaust gases to build up press
 18> Gears don’t create power — they trade torque for speed.
 19> Turbo engines: Produce peak torque at lower RPM Maintain a flatter torque curve
     Naturally aspirated engines: Reach peak torque at higher RPM
+However the peak power is achieved by turbo engines at similar rpms as na engines
 20> Naturally Aspirated vs Turbocharged Engines
 In a naturally aspirated engine, air enters the engine due to atmospheric pressure.
 In a turbocharged engine, a turbocharger uses exhaust gases to spin a turbine, which compresses incoming air.

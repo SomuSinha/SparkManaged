@@ -241,6 +241,9 @@ More compressed air = more oxygen
 More oxygen = more fuel can be burned
 This produces higher power and torque
 Compression heats the air, so engines often use an intercooler to cool it before combustion.
+21> The clutch is full depressed the wheel is disconnected from engine as the fly wheel is disconnected. The gear is slotted, if on higher gear and speed, brake to reduce speed , rev match and lower gear slotted, and clutch left causing connection of wheel with engine, or 
+if on lower gear and low speed, increase speed with more accelerator, slot to higher gear when clutch at depressed position (connection cut between engine and wheel) and clutch then left causing the connection between engine 
+and wheel. Don't leave the clutch until ready to give the accelerator (on acceleration is already built by momentum) required by the gear, aid with gas (clutch slip)
 
 
 GDI (Gasoline direct injection) higher power and superior fuel economy, fuel is directly sprayed in the combustion chamber. prone to carbon build up. Need standard fuel with high octane.Less turbo lag. as eben before turbo kicks in 

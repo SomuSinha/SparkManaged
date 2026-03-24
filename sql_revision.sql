@@ -561,3 +561,11 @@ where
 product_set_member.upc <> stage.upc) and active_flag=True
 
 
+
+with temp as 
+(select *, row_number() over (partition by id, name order by case when col='abc' then 1 
+	                                                              when col='def' then 2
+	                                                              else 0 end)
+from tbl	
+)
+select * from temp where rnum<=1

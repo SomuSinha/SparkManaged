@@ -244,6 +244,12 @@ Compression heats the air, so engines often use an intercooler to cool it before
 21> The clutch is full depressed the wheel is disconnected from engine as the fly wheel is disconnected. The gear is slotted, if on higher gear and speed, brake to reduce speed , rev match and lower gear slotted, and clutch left causing connection of wheel with engine, or 
 if on lower gear and low speed, increase speed with more accelerator, slot to higher gear when clutch at depressed position (connection cut between engine and wheel) and clutch then left causing the connection between engine 
 and wheel. Don't leave the clutch until ready to give the accelerator (on acceleration is already built by momentum) required by the gear, aid with gas (clutch slip)
+22> Coasting is needed with clutch full depressed and modulate brake, to get at desired low speeds and to use car's momentum. Dont leave the clutch until ready to give the accelerator required for the gear, aid with 
+accelerator. Coasting can be at any gear depends on momentum. If momentum lost during coasting switch to lower gear.
+23> A car runs by converting the chemical energy in fuel into mechanical motion through a process called internal combustion. Most modern cars use a four-stroke cycle. 
+The up-and-down (linear) motion of the pistons is converted into circular (rotational) motion by a crankshaft. Inside the engine cylinder, fuel reacts with oxygen to trigger combustion, 
+a chemical reaction that releases intense heat. This heat causes gases to expand rapidly, creating high pressure that slams against the piston. 
+That physical push converts the fuel's chemical energy into linear mechanical motion, which is then turned into rotational motion by the crankshaft to eventually spin the car's wheels.
 
 
 GDI (Gasoline direct injection) higher power and superior fuel economy, fuel is directly sprayed in the combustion chamber. prone to carbon build up. Need standard fuel with high octane.Less turbo lag. as eben before turbo kicks in 

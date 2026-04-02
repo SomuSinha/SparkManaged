@@ -568,4 +568,29 @@ with temp as
 	                                                              else 0 end)
 from tbl	
 )
-select * from temp where rnum<=1
+select * from temp where rnum<=1;
+
+
+
+
+with temp as 
+(
+select 
+sum(case when nullif(trim(col1), '') is null or col1='NA' then 0 else 1 end) as col1_fill_rate,
+sum(case when nullif(trim(col2), '') is null or col2='NA' then 0 else 1 end) as col2_fill_rate
+from tbl 
+
+
+
+
+)
+select * from temp;
+
+
+
+with temp as (
+select *, sum(case when col1='zone' then 1 
+                   when col1='store' then 2 
+				   else 0 end) as col1_flag
+from tbl)
+select * from temp where col1_flag  >= 10;

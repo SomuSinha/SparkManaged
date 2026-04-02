@@ -594,3 +594,45 @@ select *, sum(case when col1='zone' then 1
 				   else 0 end) as col1_flag
 from tbl)
 select * from temp where col1_flag  >= 10;
+
+
+
+with temp as 
+(
+--record missing in tbl2
+select t1.* from 
+tbl1 t1 
+left join tbl2 t2 on t1.id = t2.id
+where t2.id is null
+)
+--find in t3
+select t.*
+from temp t
+join tbl3 t3 on  t.id = t3.id = t.name = t3.name;
+
+
+
+
+--record missing in both
+select t1.* from 
+tbl1 t1 
+left join tbl2 t2 on t1.id = t2.id
+left join join tbl3 t3 on  t.id = t3.id = t.name = t3.name
+where t2.id is null and t3.id is null and t3.name is null;
+
+
+
+
+--record found in both
+select t1.* from 
+tbl1 t1 
+left join tbl2 t2 on t1.id = t2.id
+left join join tbl3 t3 on  t.id = t3.id = t.name = t3.name
+where t2.id is not null and t3.id is not null and t3.name is not null;
+
+or 
+
+select t1.* from 
+tbl1 t1 
+join tbl2 t2 on t1.id = t2.id
+join join tbl3 t3 on  t.id = t3.id = t.name = t3.name;

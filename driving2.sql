@@ -33,15 +33,15 @@
 --legs at full depressed/partially left clutch, brake(adjusted) , or at partially left clutch or full left cutch eventually and accelerator. 
 --full depressed clutch and mild amount of break depends on momentum of car (rev match) and slope to full stop (adjust breaking, let loose press more , mild braking wont stop , give control, full breaking to stop), pull fresh from high torque lower gears 1st (if complete stop eventually or immediately) or 2nd or higher (momentum lost) as mentioned above. Optionally stay in same gear and pull as above.
 --pressure applied on brakes to rev match depends on speed reduction want and momentum. 
---gradually shift gear up creating momentum, but shift down can be from top to lowest order or any other order depending on rev match . 
+--gradually shift gear up after creating momentum, but shift down can be from top to lowest order or any other order depending on rev match . 
 
 
 
 --Upshift
 
---clutch full depressed
---add accelerator and build momentum and good wheel spin(may not needed if gravity is already pulling down at downhill, break well and may go to lower gear in that case to use engine braking)
---break not needed, but body will move legs at break 
+
+--first at a gear accelerator and build momentum and good wheel spin(may not needed if gravity is already pulling down at downhill, break well and may go to lower gear in that case to use engine braking)
+--clutch full depressed, break not needed, but body will move legs at break 
 --upshift, higher gear has less pulling power, and need more wheel spin
 --(car would not want to move, if its wants an even higher gear)
 --turned left wheel go left in forward and reverse. Right turned wheel go right in forward and reverse. 
@@ -257,6 +257,10 @@ the sprayed fuel absorbs heat from cylinder and cools to have high compression r
 MPFI (Multi-port fuel injection) fuel is sprayed in intake manifold before it enters the chamber. More consistent and smoother operation at lower ends. More reliable. More tolerant.
 */
 
+--Need of clutch slipping at city speeds is more to create invariable speeds, so the statement dont leave the clutch until ready to give the accelerator required by the gear,
+--i.e slip the clutch, aid with accelerator , eventually once proper speed per gear is created, leave clutch eventually fully. However during upshift , the timing of releasing the 
+--clutch release  from full depressed position, after upshift, may be quicker as no need to slip clutch, aid with accelerator. However at lower speeds, more slip needed
+--aid with accelerator, leave clutch eventually but fully, aid with accelerator.
 
 --Scooter 
 

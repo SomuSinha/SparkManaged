@@ -262,6 +262,22 @@ MPFI (Multi-port fuel injection) fuel is sprayed in intake manifold before it en
 --clutch release  from full depressed position, after upshift, may be quicker as no need to slip clutch, aid with accelerator. However at lower speeds, more slip needed
 --aid with accelerator, leave clutch eventually but fully, aid with accelerator.
 
+--Higher the gear more clutch slipping is required and aiding with accelerator.
+
+--Rev match from high to low gear say second, full depressed clutch, brake, then dont leave the clutch completely until ready to give the accelerator required for teh gear
+--sometimes uphill will automatically reduce speed or car lost momemntum, then brake not required, as rev match aready done by external forces.
+--If rev match not done, engine will atomatically pull the car speed down if moved to lower gear, due to engine braking.
+--move to lower gear to use engine braking
+
+--lesser the rpm at higher speed, more the mileage and stability.
+--higher the gear lesser the torque and higher its speed power, smaller the gear size is . First gear is largest to create more Torque, Last gear is smallest
+--In Fixed gear, between two gears there is a gap, say one is of 5mm, then other is 2mm, so no 3mm, 4mm so coasting is required to use momentum to create invariable speeds.
+--In CVT two conical objects are used, with belt, hence invariable speeds can be achieved, but losses are there and a constant sound comes.
+--In DCT two clutches are used one for even and one for odd gear, for seamless speeds
+--AMT is MT with a actuator or robot to change gear.
+--In Torque convertor some liquids are used to convert torque, but are bulky
+--electric cars motors have motors which dont need gears and can have invariable speeds
+
 --Scooter 
 
 --scooter, position it same as car

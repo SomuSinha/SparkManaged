@@ -50,7 +50,7 @@ having count(distinct date) > 1
 )
 
 select * from tbl where coalesce(sku, 'sku')|| coalesce(upc, 'upc') in (select coalesce(sku, 'sku')|| coalesce(upc, 'upc') from temp)
-
+select * from tbl where concat(coalesce(sku, 'sku'), coalesce(upc, 'upc')) in (select concat(coalesce(sku, 'sku'), coalesce(upc, 'upc')) from temp)
 
 nullif(trim(col), '')
 
@@ -181,6 +181,18 @@ select * from
 tbl where marks in (select marks from tbl2)
 
 
+with temp as 
+(select max(marks) max_marks from tbl)
+select t1.* from tbl t1
+join temp t2 on t1.marks = t2.max_marks;
+
+
+with temp as 
+(select mid from tbl where lower(trim(designation))='manager')
+select t1.* from tbl t1
+join temp t2 on t1.eid = t2.mid;
+
+
 
 with temp as 
 (select *, count(distinct uuid) over (partition by sku, upc) distinct_values
@@ -210,7 +222,8 @@ from temp where id=temp.id
 
 
 update tbl 
-set col = case when col>2 then 1 else 0 end
+set col = case when col>2 then 1 
+	           when col>3 then 2 else 0 end
 from tbl 
 
 
@@ -636,3 +649,55 @@ select t1.* from
 tbl1 t1 
 join tbl2 t2 on t1.id = t2.id
 join join tbl3 t3 on  t.id = t3.id = t.name = t3.name;
+
+coalesce(trim(col), '') <> ''
+
+reverse(split(reverse(url), '.')[1])
+
+
+select charindex('p', 'apple') #2
+select charindex('t', 'apple') #0
+
+`year built fill rate`
+
+
+	
+--year built bifuracted across columns
+
+select state,
+sum(case when year_built>1920 and (year_built<2025 or valid='yes') then 1 else 0 end) as year_built_1920_2005,
+sum(case when year_built>2025 and year_built<2028  then 1 else 0 end) as year_built_2025_2028
+group by state;
+
+--fill rate across columns per state
+
+select state,
+sum(case when nullif(trim(year_built), '') is not null then 1 else 0 end) as year_built_fill_rate,
+sum(case when nullif(trim(age_fin), '') is not null then 1 else 0 end) as year_built_fill_rate
+group by state
+order by state desc;
+
+
+--fill rate overall
+
+select
+sum(case when nullif(trim(year_built), '') is not null then 1 else 0 end) as year_built_fill_rate,
+sum(case when nullif(trim(age_fin), '') is not null then 1 else 0 end) as year_built_fill_rate
+;
+
+
+--year built bifuracted across rows
+
+select state, 
+case when year_built>1920 and (year_built<2025 or valid='yes') then 'year_built_1920_2005'
+     when year_built>2025 and year_built<2028 then 'year_built_2025_2028'
+     else 'NA' end as result
+from tbl 
+group by state
+
+
+select *, 
+case when year_built>1920 and (year_built<2025 or valid='yes') then 'year_built_1920_2005'
+     when year_built>2025 and year_built<2028 then 'year_built_2025_2028'
+     else 'NA' end as result
+from tbl 

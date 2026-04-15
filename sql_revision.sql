@@ -723,3 +723,7 @@ from tbl t1
 left join tbl2 t2 on t1.id = t2.id 
 left join tbl3 t3 t2.id = t3.id
 where t2.id is not null and t3.id is null;
+
+
+select repeat('test', 3);
+SELECT PATINDEX('%schools%', 'W3Schools.com'); #3

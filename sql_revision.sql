@@ -701,3 +701,25 @@ case when year_built>1920 and (year_built<2025 or valid='yes') then 'year_built_
      when year_built>2025 and year_built<2028 then 'year_built_2025_2028'
      else 'NA' end as result
 from tbl 
+
+
+select 
+from tbl t1 
+left join tbl2 t2 on t1.id = t2.id 
+left join tbl3 t3 t1.id = t3.id
+where t2.id is null and t3.id is not null;
+
+with temp as 
+(select 
+from tbl t1 
+left join tbl2 t2 on t1.id = t2.id and t1.name = t2.name
+where t2.id is null)
+select t1.*
+from temp t1
+join tbl3 t3 on t1.id = t3.id and t1.name = t3.name;
+
+select 
+from tbl t1 
+left join tbl2 t2 on t1.id = t2.id 
+left join tbl3 t3 t2.id = t3.id
+where t2.id is not null and t3.id is null;

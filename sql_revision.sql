@@ -727,3 +727,9 @@ where t2.id is not null and t3.id is null;
 
 select repeat('test', 3);
 SELECT PATINDEX('%schools%', 'W3Schools.com'); #3
+
+
+row_number() over (partition by ltrim(sku,'0'), ltrim(upc, '0') order by active_flag desc, time_stamp)
+row_number() over (partition by ltrim(sku,'0'), ltrim(upc, '0') order by case when active_flag = True then 1 else 0 end, time_stamp, case when created_dt='2012-02-02' then 1 else 0 end)
+row_number() over (partition by ltrim(sku,'0'), ltrim(upc, '0') order by 1)
+row_number() over (order by active_flag desc, time_stamp)

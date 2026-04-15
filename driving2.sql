@@ -278,6 +278,9 @@ MPFI (Multi-port fuel injection) fuel is sprayed in intake manifold before it en
 --In Torque convertor some liquids are used to convert torque, but are bulky
 --electric cars motors have motors which dont need gears and can have invariable speeds
 
+--Lost momemtum at a higher gear, full clutch down, brake (only if needed to brake momentum further, to rev match), slot to lower gear, don't leave clutch completely until ready to give
+--accelerator required for the gear, aid with accelerator.
+
 --Scooter 
 
 --scooter, position it same as car

@@ -281,6 +281,8 @@ MPFI (Multi-port fuel injection) fuel is sprayed in intake manifold before it en
 --Lost momemtum at a higher gear, full clutch down, brake (only if needed to brake momentum further, to rev match), slot to lower gear, don't leave clutch completely until ready to give
 --accelerator required for the gear, aid with accelerator.
 
+--dont leave the clucth completely until ready to give the accelerator required for the gear, aid with accelerator. make sure to release the clutch eventually, before giving full throttle, otherwise clutch will hold back the car and also transmission will make noise.
+
 --Scooter 
 
 --scooter, position it same as car

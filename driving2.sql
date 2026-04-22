@@ -282,6 +282,13 @@ MPFI (Multi-port fuel injection) fuel is sprayed in intake manifold before it en
 --accelerator required for the gear, aid with accelerator.
 
 --dont leave the clucth completely until ready to give the accelerator required for the gear, aid with accelerator. make sure to release the clutch eventually, before giving full throttle, otherwise clutch will hold back the car and also transmission will make noise.
+--Lower gear and larger, but they have least power but highest torque, meaning if they rotate 3 times, wheel will spin one time.
+--Higheest gear is smallest with maximum power and least pulling power torque.
+--Different cars have different gear ratio division, some have 5 , some 6, as there is always a trade between torque and power and gears define rpms that it can run 
+--on that gear, else clutch slipping is required
+--CVTs or electric motors can create many gear ratios, just by sliding the band or by electric motor, so less slipping is required.
+
+
 
 --Scooter 
 

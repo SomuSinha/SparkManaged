@@ -291,6 +291,11 @@ MPFI (Multi-port fuel injection) fuel is sprayed in intake manifold before it en
 --the gap between gears are reduced in 6 gear transmission, helps turbo lag as rpms don't drop too much on shifting up.
 --lower gear has maximum rpm and last gear has least rpm.
 --but that means more early shift from first to fourth.
+--at the same low speed (eg : 20 km/h), a 6 speed car's 2nd gear will run at a higher rpm than a 5 speed car's 2nd gear. and since turno kicks in around 1500-2000 rpms
+--the shorter gearing helps push the engine into turbo zone faster. since ratios are closer , we can shift from 3rd to 2nd earlier
+--without affecting cars torque vs power trade as it would do in a 5 speed gear car.
+--RPM drop is smaller when shifting from 1st to 2nd gear in 6 speed transmissions.
+--finding the sweet spot is easier with less need to override i.e slip clutch.
 
 
 --Scooter 

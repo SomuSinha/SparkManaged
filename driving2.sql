@@ -287,7 +287,10 @@ MPFI (Multi-port fuel injection) fuel is sprayed in intake manifold before it en
 --Different cars have different gear ratio division, some have 5 , some 6, as there is always a trade between torque and power and gears define rpms that it can run 
 --on that gear, else clutch slipping is required
 --CVTs or electric motors can create many gear ratios, just by sliding the band or by electric motor, so less slipping is required.
-
+--high gear helps to run at high speeds at lower rpm and hence more fuel efficient and less noise, vibration and harshness.
+--the gap between gears are reduced in 6 gear transmission, helps turbo lag as rpms don't drop too much on shifting up.
+--lower gear has maximum rpm and last gear has least rpm.
+--but that means more early shift from first to fourth.
 
 
 --Scooter 

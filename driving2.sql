@@ -262,7 +262,11 @@ MPFI (Multi-port fuel injection) fuel is sprayed in intake manifold before it en
 --clutch release  from full depressed position, after upshift, may be quicker as no need to slip clutch, aid with accelerator. However at lower speeds, more slip needed
 --aid with accelerator, leave clutch eventually but fully, aid with accelerator.
 
---Higher the gear more clutch slipping is required and aiding with accelerator.
+--Higher the gear and lesser the mementum more clutch slipping is required and aiding with accelerator.
+--Slipping of clucth is more if momentum is less, slipping is less if momentum is more, clutch is eventually but fully released at any gear, aid with accelerator
+--Lesser the momentum, accordingly smaller the gear should be chosen, as momentum builds gear should be upshifted
+--slipping should be chosen depending on the gear and momentum. To start from standstill sliiping is required, aid with accelerator, higher the gear, lesser the momentum
+--more slipping is  required aid with accelerator, more the momentum lesser the slipping is required.
 
 --Rev match from high to low gear say second, full depressed clutch, brake, then dont leave the clutch completely until ready to give the accelerator required for teh gear
 --sometimes uphill will automatically reduce speed or car lost momemntum, then brake not required, as rev match aready done by external forces.

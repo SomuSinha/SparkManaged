@@ -733,3 +733,13 @@ row_number() over (partition by ltrim(sku,'0'), ltrim(upc, '0') order by active_
 row_number() over (partition by ltrim(sku,'0'), ltrim(upc, '0') order by case when active_flag = True then 1 else 0 end, time_stamp, case when created_dt='2012-02-02' then 1 else 0 end)
 row_number() over (partition by ltrim(sku,'0'), ltrim(upc, '0') order by 1)
 row_number() over (order by active_flag desc, time_stamp)
+
+
+
+with temp as 
+(select *, row_number() over (partition by property_id order by case 
+	when streetNormalizedSorted is not null then 0 
+	when AlternativeStreetNormalizedSorted is not null
+	then 1 else 3 end) rnum
+from tbl)
+select * from temp where rnum = 1
